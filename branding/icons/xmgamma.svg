@@ -1,11 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img" aria-label="xmGamma (Gamma) — visualization">
-  <title>xmGamma — γ — visualization</title>
+  <title>xmGamma — γ — visualization: a viewer window plotting data</title>
   <rect x="6" y="6" width="116" height="116" rx="30" fill="#161B26" stroke="#C158DC" stroke-opacity="0.4" stroke-width="2"/>
-  <!-- motif: gamma-correction curve on mini axes -->
-  <g stroke="#C158DC" opacity="0.7" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M46 112 V96 M46 112 H86"/>
-    <path d="M46 112 C58 112 70 104 86 94"/>
+  <text x="64" y="62" font-family="Georgia, serif" font-size="92" font-weight="700" fill="#C158DC" opacity="0.10" text-anchor="middle" dominant-baseline="central">&#947;</text>
+  <!-- function: visualization window with a plot -->
+  <g stroke="#C158DC" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="30" y="34" width="68" height="56" rx="6"/>
+    <path d="M30 49 H98" stroke-width="3"/>
+    <circle cx="38" cy="41.5" r="1.7" fill="#C158DC" stroke="none"/>
+    <circle cx="45" cy="41.5" r="1.7" fill="#C158DC" stroke="none"/>
+    <path d="M38 80 L52 67 L64 73 L76 55 L90 61" stroke-width="3.5"/>
   </g>
-  <!-- hero glyph -->
-  <text x="64" y="54" font-family="Georgia, 'Times New Roman', serif" font-size="60" font-weight="600" fill="#C158DC" text-anchor="middle" dominant-baseline="central">&#947;</text>
 </svg>
