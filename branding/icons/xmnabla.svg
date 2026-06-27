@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img" aria-label="xmNabla (Nabla) — motion algorithms">
+  <title>xmNabla — &#8711; — motion algorithms (centerpiece)</title>
+  <rect x="6" y="6" width="116" height="116" rx="30" fill="#161B26" stroke="#10B6C6" stroke-opacity="0.6" stroke-width="2"/>
+  <!-- motif: gradient-descent arrow -->
+  <g stroke="#10B6C6" opacity="0.7" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M50 100 L78 110"/>
+    <path d="M78 110 L69 110 M78 110 L77 101"/>
+  </g>
+  <!-- hero glyph: nabla drawn as a bold outline triangle -->
+  <path d="M41 42 H87 L64 86 Z" fill="none" stroke="#10B6C6" stroke-width="7" stroke-linejoin="round"/>
+</svg>

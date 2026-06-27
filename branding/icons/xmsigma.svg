@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img" aria-label="xmSigma (Sigma) — runtime foundation">
+  <title>xmSigma — Σ — runtime foundation</title>
+  <rect x="6" y="6" width="116" height="116" rx="30" fill="#161B26" stroke="#5E6AD2" stroke-opacity="0.4" stroke-width="2"/>
+  <!-- motif: stacked foundation layers -->
+  <g fill="#5E6AD2" opacity="0.7">
+    <rect x="38" y="97" width="52" height="3.5" rx="1.75"/>
+    <rect x="44" y="104" width="40" height="3.5" rx="1.75"/>
+    <rect x="50" y="111" width="28" height="3.5" rx="1.75"/>
+  </g>
+  <!-- hero glyph -->
+  <text x="64" y="54" font-family="Georgia, 'Times New Roman', serif" font-size="60" font-weight="600" fill="#5E6AD2" text-anchor="middle" dominant-baseline="central">&#931;</text>
+</svg>
