@@ -1,0 +1,7 @@
+xMotion
+Copyright 2015-2026 Ruixiang Du
+
+Licensed under the Apache License, Version 2.0 (see LICENSE).
+
+This product bundles third-party components via git submodules, each of which
+retains its own license; those licenses are unaffected by this NOTICE.

@@ -1,0 +1,20 @@
+# Build directories
+build/
+build-*/
+out/
+cmake-build-*/
+
+# Install / export
+install/
+_install/
+
+# CMake artifacts
+CMakeCache.txt
+CMakeFiles/
+*.cmake.user
+
+# Editor / OS
+.idea/
+.vscode/
+*.swp
+.DS_Store
