@@ -5,8 +5,8 @@ A cohesive icon set for the xMotion family. Each icon shares one visual language
 ## Design system
 
 - **Badge** — a dark rounded-square (`#161B26`, `rx=30` on a 128×128 grid) with a thin accent-colored rim. Common shape + shared line style = family cohesion.
-- **Hero** — functional line-art of what the component *does* (a motor, a planned path, a PCB, an MCU…), drawn in the accent color with consistent stroke weight and rounded joins. `xmNabla`, the centerpiece, keeps a brighter rim.
-- **Brand watermark** — the component's Greek symbol sits faintly behind the art (10% opacity), retaining the naming identity without competing with the function cue.
+- **Hero** — functional line-art of what the component *does* (an IMU, a flow field, a surface plot, a UART decode, a PCB…), drawn in the accent color with consistent stroke weight and rounded joins. `xmNabla`, the centerpiece, keeps a brighter rim.
+- **Brand watermark** — the component's Greek symbol sits faintly behind the art (~10% opacity; `xmKappa`'s is enlarged and boosted so the κ reads through its busier routing), retaining the naming identity without competing with the function cue.
 
 ## The set
 
@@ -32,14 +32,14 @@ A cohesive icon set for the xMotion family. Each icon shares one visual language
 | Icon | Accent | Symbol | Icon depicts |
 |------|--------|--------|--------------|
 | **xmSigma** | `#5E6AD2` indigo | Σ | a hub of connected nodes — the runtime/event/IPC substrate everything plugs into |
-| **xmMu** | `#F2A23A` amber | μ | an electric motor (rotor, poles, leads) — host hardware drivers |
-| **xmNabla** | `#10B6C6` teal | ∇ | a planned trajectory through waypoints to a goal — motion algorithms (centerpiece) |
-| **xmGamma** | `#C158DC` violet | γ | a viewer window plotting data — visualization |
-| **xmZeta** | `#46B358` green | ζ | an MCU chip running a firmware signal — firmware (Zephyr) |
-| **xmKappa** | `#E5604D` coral | κ | a PCB with traces, vias and a footprint — electronics (KiCAD) |
+| **xmMu** | `#F2A23A` amber | μ | a 3-axis IMU frame with a gyro ring — host hardware drivers |
+| **xmNabla** | `#10B6C6` teal | ∇ | a flow field of vectors converging to a goal (forms the ∇) — motion algorithms (centerpiece) |
+| **xmGamma** | `#C158DC` violet | γ | a 3D gamma-distribution surface plot — visualization |
+| **xmZeta** | `#46B358` green | ζ | a UART decode — logic-analyzer waveform + the decoded byte `0x5A` — firmware (Zephyr) |
+| **xmKappa** | `#E5604D` coral | κ | a PCB fan-out — IC footprint, pins, traces and vias — electronics (KiCAD) |
 
 ## Usage notes
 
 - Files are plain SVG at 128×128; scale freely. For favicons/app icons, export to PNG at 16/32/48/256.
-- **Production hardening:** all functional art is pure geometry; only the faint Greek **watermark** uses a system serif via `<text>`. For pixel-identical rendering everywhere (and to drop the font dependency), convert that text to outlines — e.g. Inkscape *Path → Object to Path*, or `inkscape --export-text-to-path` — or simply remove the watermark.
+- **Font-independent:** every element — including the Greek watermarks and `xmZeta`'s `0x5A` byte — is baked to vector outlines (no `<text>`, no font dependency), so the files render pixel-identically everywhere. The shapes derive from DejaVu Serif/Mono Bold, positioned to match the original text exactly.
 - Keep the dark badge; the accent color is the only thing that should change per component. A light-background variant can be added later if needed.

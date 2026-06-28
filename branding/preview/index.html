@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>xMotion icons — preview</title>
+<style>
+  :root { --bg:#0e1016; --fg:#e6e9ef; --muted:#8b93a7; --panel:#161b26; --line:#262d3b; }
+  * { box-sizing: border-box; }
+  body { margin:0; font:14px/1.5 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+         background:var(--bg); color:var(--fg); }
+  header { position:sticky; top:0; z-index:5; background:rgba(14,16,22,.92);
+           backdrop-filter:blur(6px); border-bottom:1px solid var(--line);
+           padding:14px 20px; display:flex; gap:18px; align-items:center; flex-wrap:wrap; }
+  h1 { font-size:15px; margin:0; font-weight:600; letter-spacing:.3px; }
+  .sub { color:var(--muted); font-size:12px; }
+  .controls { display:flex; gap:14px; align-items:center; margin-left:auto; flex-wrap:wrap; }
+  label { color:var(--muted); display:flex; gap:6px; align-items:center; cursor:pointer; user-select:none; }
+  button, select { background:var(--panel); color:var(--fg); border:1px solid var(--line);
+                   border-radius:8px; padding:6px 10px; font-size:13px; cursor:pointer; }
+  main { padding:24px; display:grid; gap:20px;
+         grid-template-columns:repeat(auto-fill,minmax(330px,1fr)); }
+  .card { border:1px solid var(--line); border-radius:14px; overflow:hidden; background:var(--panel); }
+  .card h2 { font-size:13px; margin:0; padding:12px 14px; border-bottom:1px solid var(--line);
+             display:flex; justify-content:space-between; align-items:center; }
+  .swatch { width:12px; height:12px; border-radius:3px; display:inline-block; }
+  .stage { padding:20px 14px; display:flex; gap:18px; align-items:flex-end; justify-content:center; flex-wrap:wrap; }
+  .sz { display:flex; flex-direction:column; align-items:center; gap:6px; }
+  .sz span { color:var(--muted); font-size:11px; }
+  .sz img { display:block; image-rendering:auto; }
+  /* background modes for the stage */
+  .stage.dark  { background:#0e1016; }
+  .stage.light { background:#f4f5f7; }
+  .stage.check { background-color:#2a2f3a;
+    background-image:linear-gradient(45deg,#222732 25%,transparent 25%),
+      linear-gradient(-45deg,#222732 25%,transparent 25%),
+      linear-gradient(45deg,transparent 75%,#222732 75%),
+      linear-gradient(-45deg,transparent 75%,#222732 75%);
+    background-size:18px 18px; background-position:0 0,0 9px,9px -9px,-9px 0; }
+  .strip { grid-column:1/-1; border:1px solid var(--line); border-radius:14px; background:var(--panel); }
+  .strip h2 { font-size:13px; margin:0; padding:12px 14px; border-bottom:1px solid var(--line); }
+  .striprow { padding:18px; display:flex; gap:24px; align-items:center; justify-content:center; flex-wrap:wrap; }
+  .note { color:var(--muted); font-size:12px; padding:0 24px 28px; }
+  code { background:var(--panel); padding:1px 5px; border-radius:5px; border:1px solid var(--line); }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>xMotion — component icons</h1>
+    <div class="sub">live preview · edit the SVGs in <code>branding/icons/</code> and they reload here</div>
+  </div>
+  <div class="controls">
+    <label>bg
+      <select id="bg">
+        <option value="dark">dark</option>
+        <option value="light">light</option>
+        <option value="check">checker</option>
+      </select>
+    </label>
+    <label><input type="checkbox" id="auto" checked> auto-reload</label>
+    <button id="reload">reload now</button>
+  </div>
+</header>
+
+<main id="grid"></main>
+
+<div class="strip">
+  <h2>family strip</h2>
+  <div class="striprow" id="strip128"></div>
+  <div class="striprow" id="strip32"></div>
+</div>
+
+<p class="note">Sizes shown: 256 / 128 / 64 / 48 / 32 / 16 px — check that the function still reads at small sizes. Toggle the background to test contrast on light/dark/transparent. Auto-reload re-fetches every 1.5 s with a cache-buster, so saved edits appear without a manual refresh.</p>
+
+<script>
+const ICONS = [
+  { id:"xmsigma", name:"xmSigma · Σ", color:"#5E6AD2" },
+  { id:"xmmu",    name:"xmMu · μ",    color:"#F2A23A" },
+  { id:"xmnabla", name:"xmNabla · ∇", color:"#10B6C6" },
+  { id:"xmgamma", name:"xmGamma · γ", color:"#C158DC" },
+  { id:"xmzeta",  name:"xmZeta · ζ",  color:"#46B358" },
+  { id:"xmkappa", name:"xmKappa · κ", color:"#E5604D" },
+];
+const SIZES = [256,128,64,48,32,16];
+const grid = document.getElementById("grid");
+const bgSel = document.getElementById("bg");
+
+function src(id){ return `../icons/${id}.svg?t=${Date.now()}`; }
+
+ICONS.forEach(ic => {
+  const card = document.createElement("div"); card.className = "card";
+  const sizes = SIZES.map(s =>
+    `<div class="sz"><img data-id="${ic.id}" width="${s}" height="${s}" alt="${ic.id}"><span>${s}</span></div>`
+  ).join("");
+  card.innerHTML =
+    `<h2>${ic.name}<span class="swatch" style="background:${ic.color}"></span></h2>
+     <div class="stage dark">${sizes}</div>`;
+  grid.appendChild(card);
+});
+
+// family strips
+const s128 = document.getElementById("strip128");
+const s32  = document.getElementById("strip32");
+ICONS.forEach(ic => {
+  s128.insertAdjacentHTML("beforeend", `<img data-id="${ic.id}" width="96" height="96" alt="${ic.id}">`);
+  s32.insertAdjacentHTML("beforeend", `<img data-id="${ic.id}" width="32" height="32" alt="${ic.id}">`);
+});
+
+function reload(){ document.querySelectorAll("img[data-id]").forEach(img => img.src = src(img.dataset.id)); }
+function setBg(mode){ document.querySelectorAll(".stage").forEach(s => s.className = "stage " + mode); }
+
+document.getElementById("reload").onclick = reload;
+bgSel.onchange = () => setBg(bgSel.value);
+let timer = setInterval(() => { if (document.getElementById("auto").checked) reload(); }, 1500);
+reload();
+</script>
+</body>
+</html>
