@@ -1,0 +1,42 @@
+name: Assembly
+
+# Validates that the umbrella superbuild assembles the pinned components
+# (xmSigma + xmMu + xmNabla) and builds them together — the cross-component
+# integration each component's own CI cannot catch on its own.
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  BUILD_TYPE: Release
+
+jobs:
+  assemble:
+    name: Assemble (Σ+μ+∇)
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-22.04, ubuntu-24.04 ]
+    steps:
+      - name: Checkout (recursive submodules)
+        uses: actions/checkout@v5
+        with:
+          submodules: recursive
+
+      - name: Install dependencies (union of component deps)
+        run: |
+          sudo apt-get update && sudo apt-get install -y \
+            libeigen3-dev libspdlog-dev libasio-dev libmodbus-dev libevent-dev \
+            libevdev-dev libgl1-mesa-dev libglfw3-dev libcairo2-dev libtbb-dev \
+            libboost-all-dev libgsl-dev libopencv-dev libyaml-cpp-dev \
+            libncurses-dev libpcl-dev libglm-dev
+
+      - name: Configure full assembly (MU + NABLA)
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DENABLE_VISUALIZATION=OFF
+
+      - name: Build
+        run: cmake --build build -j
