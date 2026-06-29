@@ -44,9 +44,9 @@ The stack is a set of components with a strict, downward-only dependency directi
 
 | # | Name | Symbol | Role | Contains (from today's code) | Heavy deps | Repo |
 |---|------|--------|------|------------------------------|------------|------|
-| 0 | **xmSigma** | Σ | runtime foundation (always built) | `common/` — logging, event, ipc, math_utils, thread-safe containers | ~none (spdlog) | `rxdu/xmsigma` |
-| 3 | **xmMu** | μ | host-side hardware abstraction | `driver/` — motor (vesc/waveshare/akelc), async_port (CAN/serial), modbus, sbus, imu, hid | asio, libmodbus, libevdev, socketcan | `rxdu/xmmu` |
-| 4 | **xmNabla** | ∇ | motion algorithms — math-driven planning, control, estimation | `planning/` (graph, geometry, decomp, sampling, state_lattice, decision), `control/` (fsm, pid, model), `estimation/`, `mapping/` | Eigen, GSL, quadprog, CGAL, tbb | `rxdu/xmnabla` |
+| 0 | **xmSigma** | Σ | runtime foundation (always built) | logging + the shared geometry/primitive type vocabulary (`xmotion/types/`); a single `xmotion::xmSigma` target | Eigen, spdlog | `rxdu/xmsigma` |
+| 3 | **xmMu** | μ | host-side hardware abstraction | `driver/` — motor (vesc/waveshare/akelc), async_port (CAN/serial), modbus, sbus, imu, hid; **+ the driver HAL contracts** (`xmotion::hal`, `xmmu/hal/`) | asio, libmodbus, libevdev, socketcan | `rxdu/xmmu` |
+| 4 | **xmNabla** | ∇ | motion algorithms — math-driven planning, control, estimation | `planning/` (graph, geometry, decomp, sampling, state_lattice, decision), `control/` (fsm, pid, model), `estimation/`, `mapping/`; **+ motion/control types** (`xmnabla/`); **depends on μ's HAL** | Eigen, GSL, quadprog, CGAL, tbb | `rxdu/xmnabla` |
 | – | **xmGamma** | γ | visualization | `quickviz/` | GLFW, OpenGL, imgui, cairo, glm | `rxdu/quickviz` |
 | 2 | **xmZeta** | ζ | MCU firmware | `libzdriver` (Zephyr/west) | Zephyr SDK | `rxdu/xmzeta` |
 | 1 | **xmKappa** | κ | PCB / electronics | `libkpcb` (KiCAD) | — | `rxdu/xmkappa` |
@@ -88,6 +88,8 @@ Accepted tradeoff: a change to a shared `xmSigma` API requires bumping its pin i
 ### 4. Standards
 
 1. **Dependencies point downward only** — `xmSigma ← xmMu`, `xmSigma ← xmNabla`, `xmSigma ← xmGamma`; apps depend on any. No upward or sideways edges. Each repo's CI builds it standalone, proving the boundary; the umbrella CI builds the assembled set.
+
+   > **Revision (2026-06-30) — Σ scope tightened; one intentional downward edge `μ ← ∇`.** The original rule placed all driver/control interfaces and common types in Σ and forbade *any* sideways edge. In practice that put things in Σ that belong to a single upper layer (driver interfaces only the drivers implement; trajectory/control types only ∇ uses) — Σ should hold *only what is universal*, since every component depends on it. Σ was therefore narrowed to **logging + the shared `xmotion/types/` vocabulary**, as one `xmotion::xmSigma` target. The 12 driver interfaces moved to **xmMu** as its header-only HAL (`xmotion::hal`, `xmmu/hal/`); `trajectory`/`ControllerInterface` moved to **xmNabla** (`xmnabla/…`, `xmotion::xmnabla_common`). Because ∇'s control commands hardware *through* the motor HAL **and** implements it via actuator-group adapters (a bilateral contract with no natural owner among the siblings), this introduces the one deliberate edge **`xmMu ← xmNabla`**: ∇ links μ's header-only HAL. The model is now a strict layering **Σ ← μ ← ∇** (μ and ∇ are no longer pure siblings); γ remains a Σ-only sibling. Landed as a coordinated 4-PR change, gated on the umbrella Assembly CI.
 2. **Heavy/optional deps behind `*_WITH_*` flags, off by default** — each component's base build stays minimal; the umbrella exposes `XMOTION_WITH_MU/_NABLA/_GAMMA`.
 3. **One build idiom everywhere** — adopt the `legged_controller` style in every repo: `CMakePresets.json`, `PROJECT_IS_TOP_LEVEL` guards, `EXCLUDE_FROM_ALL` on vendored submodules, install/export rules with namespaced targets, semantic versioning per repo.
 4. **One FSM** — converge on `ctfsm` (already proven in `legged_controller`); retire `fsm_template.hpp`.
