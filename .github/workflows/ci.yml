@@ -35,7 +35,7 @@ jobs:
             libboost-all-dev libgsl-dev libopencv-dev libyaml-cpp-dev \
             libncurses-dev libpcl-dev libglm-dev
 
-      - name: Configure (full assembly: MU + NABLA)
+      - name: Configure full assembly (MU + NABLA)
         run: cmake -S . -B build -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DENABLE_VISUALIZATION=OFF
 
       - name: Build
