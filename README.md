@@ -1,15 +1,15 @@
 <div align="center">
 
+<img src="branding/icons/xmkappa.svg" width="60" alt="xmKappa">
+<img src="branding/icons/xmzeta.svg" width="60" alt="xmZeta">&nbsp;
 <img src="branding/icons/xmsigma.svg" width="60" alt="xmSigma">&nbsp;
 <img src="branding/icons/xmmu.svg" width="60" alt="xmMu">&nbsp;
 <img src="branding/icons/xmnabla.svg" width="60" alt="xmNabla">&nbsp;
 <img src="branding/icons/xmgamma.svg" width="60" alt="xmGamma">&nbsp;
-<img src="branding/icons/xmzeta.svg" width="60" alt="xmZeta">&nbsp;
-<img src="branding/icons/xmkappa.svg" width="60" alt="xmKappa">
 
 # xMotion
 
-**A component family for mobile-robot motion** — a reusable software stack with its firmware and hardware companions.
+**Everything that moves a mobile robot** — board, firmware, drivers, and the algorithms that steer them.
 
 </div>
 
@@ -21,12 +21,12 @@ This repository is the **umbrella**: a thin CMake superbuild that assembles the 
 
 |   | Component | Role | Repo |
 |---|-----------|------|------|
+| **κ** | xmKappa | PCB / electronics (KiCAD) | [rxdu/xmKappa](https://github.com/rxdu/xmKappa) |
+| **ζ** | xmZeta | MCU firmware (Zephyr) | [rxdu/xmZeta](https://github.com/rxdu/xmZeta) |
 | **Σ** | xmSigma | foundation — logging · ipc · math · common types | [rxdu/xmSigma](https://github.com/rxdu/xmSigma) |
 | **μ** | xmMu | host hardware drivers — motor · CAN · serial · modbus · sbus · imu | [rxdu/xmMu](https://github.com/rxdu/xmMu) |
 | **∇** | xmNabla | motion algorithms — planning · control · estimation · mapping&nbsp;·&nbsp;*centerpiece* | [rxdu/xmNabla](https://github.com/rxdu/xmNabla) |
 | **γ** | xmGamma | visualization | [rxdu/quickviz](https://github.com/rxdu/quickviz) |
-| **ζ** | xmZeta | MCU firmware (Zephyr) | [rxdu/xmZeta](https://github.com/rxdu/xmZeta) |
-| **κ** | xmKappa | PCB / electronics (KiCAD) | [rxdu/xmKappa](https://github.com/rxdu/xmKappa) |
 
 Everything builds on **xmSigma**; dependencies point downward only. Two pairs span the boundary: **Σ/μ** on the host, **ζ/κ** on the embedded target — with **∇** the motion-algorithms core.
 
