@@ -1,11 +1,11 @@
 <div align="center">
 
+<img src="branding/icons/xmkappa.svg" width="60" alt="xmKappa">
+<img src="branding/icons/xmzeta.svg" width="60" alt="xmZeta">&nbsp;
 <img src="branding/icons/xmsigma.svg" width="60" alt="xmSigma">&nbsp;
 <img src="branding/icons/xmmu.svg" width="60" alt="xmMu">&nbsp;
 <img src="branding/icons/xmnabla.svg" width="60" alt="xmNabla">&nbsp;
 <img src="branding/icons/xmgamma.svg" width="60" alt="xmGamma">&nbsp;
-<img src="branding/icons/xmzeta.svg" width="60" alt="xmZeta">&nbsp;
-<img src="branding/icons/xmkappa.svg" width="60" alt="xmKappa">
 
 # xMotion
 
