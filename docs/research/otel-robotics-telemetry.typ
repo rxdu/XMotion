@@ -31,8 +31,13 @@
     dataflow tracing and health metrics ($approx$30%), and irrelevant-to-harmful
     for the real-time hot path and the safety monitor ($approx$30%). We enumerate
     the gaps a robotics stack must fill --- real-time-safe capture, a hardware
-    time model, lossless anomaly recording, and dataflow-native causality --- and
-    map a recommended architecture onto the xMotion component family.
+    time model, lossless anomaly recording, and dataflow-native causality. A
+    prior-art survey then shows these gaps are met by mature, framework-agnostic
+    building blocks (LTTng, NanoLog/Quill, MCAP, OpenTelemetry), so the design
+    task is not to build an engine but to bind them coherently. We propose a
+    lightweight strategy --- one thin, OTel-shaped instrumentation surface plus a
+    common spine, with the engines as pluggable, compile-time-selected sinks ---
+    and map it onto the xMotion component family.
   ],
   keywords: ("observability", "OpenTelemetry", "real-time systems", "robotics", "safety-critical", "telemetry", "flight recorder"),
   date: "July 2, 2026",
@@ -362,6 +367,114 @@ robotics stack must build or borrow elsewhere for the whole to be valuable.
 + *Strict observability/safety separation* (§3): the safety monitor remains
   independent of OTel.
 
+= Related Work: Existing Building Blocks
+
+Before designing anything, we surveyed whether the real-time capture layer that
+§8 identifies as differentiating already exists as adoptable software. It does,
+and at high maturity (#ref(<tab:related>)). The wait-free ring with
+flight-recorder snapshot --- which one might assume is bespoke --- is precisely
+LTTng's documented design @desnoyers2006lttng and ROS 2's rosbag2 snapshot mode
+@rosbag2snapshot; the deferred-format hot-path logging that the "capture raw,
+decode off-line" pattern (§6.3) describes is shipped by NanoLog @nanolog and Quill
+@quill at nanosecond scale.
+
+#figure(
+  caption: [Adoptable building blocks per layer. The real-time-capture primitives
+    are mature and framework-agnostic; most turnkey robotics observability is
+    coupled to ROS 2.],
+  table(
+    columns: (auto, auto, auto, auto),
+    align: (left, left, center, center),
+    table.header([*Layer*], [*Solution*], [*ROS-coupled?*], [*Verdict*]),
+    [Wait-free ring + flight recorder], [LTTng UST, snapshot mode @desnoyers2006lttng], [No], [Adopt],
+    [RT logging (deferred format)], [NanoLog @nanolog, Quill @quill], [No], [Adopt],
+    [RT tracing for robotics], [ros2_tracing @bedard2022ros2tracing, ros2probe @ros2probe], [Yes], [Adopt if ROS],
+    [Recording format], [MCAP @mcap], [No], [Adopt],
+    [Snapshot-to-disk on trigger], [rosbag2 snapshot @rosbag2snapshot], [Yes], [Pattern to mirror],
+    [Zero-copy RT transport], [Eclipse iceoryx @iceoryx], [No], [Adopt if needed],
+    [Fleet export + backends], [OpenTelemetry @otelspec, Foxglove @foxglove, Sift @siftstack], [No], [Adopt],
+    [OTel$arrow.l.r$ROS bridge], [ros-opentelemetry @rosopentelemetry], [Yes], [Reference],
+  )
+) <tab:related>
+
+Two conclusions follow. First, the capture engine must be *adopted, not
+reimplemented*: reproducing lockless multi-core buffering or nanosecond deferred
+logging would re-derive published, battle-tested work. Second, a *framework*
+split emerges: the turnkey robotics tools (ros2_tracing, rosbag2,
+ros-opentelemetry) assume ROS 2, whereas the substrate primitives (LTTng,
+NanoLog/Quill, MCAP, OpenTelemetry, iceoryx) are framework-agnostic and adoptable
+by a non-ROS C++ family such as xMotion. The design task is therefore not to
+build an engine but to *bind* these engines coherently to the xMotion HAL without
+bloat --- the subject of §10.
+
+= A Coherent, Lightweight Instrumentation Strategy
+
+The objective is a single, thin instrumentation *surface* usable identically from
+control, planning, and decision code, with the §9 engines plugged in behind it.
+The organizing principle: *coherence comes from one spine; lightness comes from
+pluggable, compile-time-selected, off-by-default sinks.* We design the spine and
+adopt the engines.
+
+== One surface, many sinks
+
+Call sites bind to a minimal first-party surface --- roughly four verbs:
+`event` (discrete structured record), `metric` (counter/gauge/histogram),
+`scope` (causal timing span with a correlation id), and `signal` (high-rate typed
+sample). Domain `health` is not a fifth primitive but a convention expressed over
+`metric` and `event`. The surface must be *smaller than any single backend's API*
+--- minimalism is the anti-bloat constraint --- yet *shaped to the OpenTelemetry
+data model*, so each backend adapter is a near-zero-cost mapping rather than a fat
+translation layer. Binding call sites to the surface (not to LTTng's or OTel's API
+directly) is the same decoupling the family already applies to its logging vendor.
+
+== What to own versus what to adopt
+
+#figure(
+  caption: [The division of labour. The owned "spine" is small and specific to the
+    xMotion HAL; the adopted engines are the mature commodity substrate.],
+  table(
+    columns: (1fr, 1fr),
+    align: (left, left),
+    table.header([*Own and design (the spine)*], [*Adopt (the engines)*]),
+    [The 4-verb instrumentation surface], [Wait-free ring / flight recorder: LTTng @desnoyers2006lttng],
+    [Monotonic clock, run/session id, resource identity], [Deferred-format RT logging: NanoLog/Quill @nanolog @quill],
+    [Correlation-id-in-message convention (not HTTP)], [Recording format: MCAP @mcap],
+    [RT capture boundary contract (wait-free produce, drop policy)], [Export + backends: OpenTelemetry/OTLP @otlp],
+    [Domain vocabulary: health / freshness / deadline-miss], [Time synchronization: PTP/gPTP],
+    [Routing policy: primitive $arrow.r$ plane/sink], [Correlation-id encoding: W3C Trace Context @w3ctracecontext],
+  )
+) <tab:ownadopt>
+
+== Three rules that keep it lightweight
+
++ *Thin, adapted, not bound.* Call sites use the four verbs; backends are adapted
+  behind them. The surface stays OTel-shaped so adapters are trivial, but no call
+  site ever includes a backend header.
++ *Compile-time selection and no-op-when-off.* A build links only the sinks it
+  enables; disabled instrumentation compiles to nothing (NanoLog-style
+  compile-time extraction). "Integrate everywhere" must not mean "everywhere
+  pays."
++ *Header-light core, heavy sinks isolated.* The surface is a light header plus a
+  small runtime in the foundation with no LTTng/OTel/MCAP dependency; sinks are
+  separate optional targets. This is the OpenTelemetry API/SDK split applied to
+  the family's own surface.
+
+== Two data classes, one surface
+
+The same four verbs carry two data classes with different fates: *aggregatable
+diagnostics* (`event`/`metric`/`health`) routed to the observability plane
+(OpenTelemetry), and *raw high-rate signals* (`signal`) routed to the recording
+plane (MCAP/LTTng). The routing policy --- not the call site --- separates them,
+so a 1 kHz raw stream never enters the metrics pipeline (§6.2). A discipline test
+follows directly: if adding a backend requires touching call sites, the surface
+has leaked; if instrumenting a new module pulls a heavy dependency, the core has
+leaked. Either is a design defect, not a feature.
+
+A strategic corollary: because the surface hides the sinks, the layer can be built
+before the LTTng-versus-lock-free-ring and ROS-interop decisions are made --- the
+call sites do not change when those are resolved later. The design is deliberately
+decision-independent, which de-risks it.
+
 = Recommended Architecture for the xMotion Family
 
 The three-plane model maps onto the xMotion components (Σ foundation, μ drivers,
@@ -388,11 +501,14 @@ The three-plane model maps onto the xMotion components (Σ foundation, μ driver
   ```
 ) <fig:arch>
 
-/ Σ (foundation): instruments against the OpenTelemetry *API*; owns the wait-free
-  RT lane, the time base, and OTel-shaped `HealthReport`/metric types. No heavy
-  telemetry dependency in core.
-/ New collector/telemetry component (optional, off by default): host/GPU/thermal
-  collectors, the MCAP recorder, and the Collector-sidecar wiring; depends on Σ.
+/ Σ (foundation): owns the *spine* of §10 --- the four-verb instrumentation
+  surface, the monotonic time base, the run/correlation-id convention, the domain
+  health vocabulary, and the RT capture boundary contract --- as a light header
+  plus small runtime with *no* heavy telemetry dependency in core.
+/ New telemetry component (optional, off by default): the adopted *engines* as
+  sinks behind the surface --- LTTng/NanoLog for RT capture, MCAP for recording,
+  the OpenTelemetry SDK + Collector for export --- plus the host/GPU/thermal
+  collectors. Compile-time-selected; depends on Σ.
 / ∇ (algorithms): the reaction/policy layer --- fuse health, enforce budgets, arm
   the recorder, degrade or failsafe. The only layer permitted to act on telemetry.
 / γ (quickviz): live on-robot visualization; Foxglove/Grafana for offline and
