@@ -471,9 +471,42 @@ has leaked; if instrumenting a new module pulls a heavy dependency, the core has
 leaked. Either is a design defect, not a feature.
 
 A strategic corollary: because the surface hides the sinks, the layer can be built
-before the LTTng-versus-lock-free-ring and ROS-interop decisions are made --- the
-call sites do not change when those are resolved later. The design is deliberately
-decision-independent, which de-risks it.
+before the remaining engine choice (LTTng versus a lock-free ring on lean
+targets) is made --- the call sites do not change when it is resolved later. The
+design is deliberately decision-independent, which de-risks it.
+
+== ROS-free core, ROS-bridgeable edge
+
+The library is deliberately *ROS-free*: it depends on none of rclcpp/rmw/DDS,
+rosbag2, ros2_tracing, or ament, so it links identically into non-ROS control code
+and into ROS 2 nodes. This honours the family's downward-only dependency rule ---
+ROS lives at the application layer as a *consumer*, not a dependency of the
+foundation. ROS-free is not ROS-hostile: three seams keep the core ROS-free while
+remaining fully interoperable with a ROS 2 application.
+
+/ Time: the core stamps with a plain monotonic clock and hardware capture time;
+  mapping to ROS time (including simulated `/clock` time) is done by the
+  application at the boundary, not baked into the library --- no `rclcpp::Clock`
+  dependency.
+/ Correlation id: the core owns the id *type/format* (W3C-shaped) and the
+  get/set-current-context helpers, but not the *carrier*. A non-ROS component
+  places the id in its DDS/shared-memory envelope; a ROS 2 node places it in a
+  message-header field. The library never includes a ROS message type.
+/ Recording: MCAP is a serialization-agnostic *format*, not a ROS component
+  (rosbag2 is the ROS wrapper around it). The core writes MCAP directly with a
+  neutral encoding, yielding artifacts the ROS ecosystem and Foxglove can open ---
+  a ROS-free producer with a ROS-compatible artifact.
+
+Any genuinely ROS-specific glue --- injecting ROS time, reading the id from a
+message header, exporting to a ROS diagnostics topic or a rosbag2/ros2_tracing
+session --- lives in an *optional application-side bridge* that depends on ROS,
+never in the library. Because LTTng is the tracing substrate beneath both this
+library and ros2_tracing @bedard2022ros2tracing, a ROS application can even
+correlate the two in a single LTTng session without the library knowing ROS
+exists. This decision fixes the engine set: the library adopts only the
+framework-agnostic engines (LTTng, NanoLog/Quill, MCAP, OpenTelemetry); the
+ROS-coupled tools of #ref(<tab:related>) become optional application-side bridges,
+not library dependencies.
 
 = Recommended Architecture for the xMotion Family
 
@@ -513,8 +546,10 @@ The three-plane model maps onto the xMotion components (Σ foundation, μ driver
   the recorder, degrade or failsafe. The only layer permitted to act on telemetry.
 / γ (quickviz): live on-robot visualization; Foxglove/Grafana for offline and
   fleet analysis.
-/ ζ (firmware) + application/umbrella: the independent safety backstop, and the
-  composition root that selects exporters, budgets, and retention.
+/ ζ (firmware) + application/umbrella: the independent safety backstop; the
+  composition root that selects exporters, budgets, and retention; and the home of
+  any optional ROS bridge (§10.5) --- ROS-specific glue lives here, never in the
+  ROS-free library.
 
 The guiding invariant restates the safety argument in dependency terms:
 telemetry primitives point *down* into Σ, collectors are *optional peers*, and
