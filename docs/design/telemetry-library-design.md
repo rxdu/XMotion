@@ -1,79 +1,84 @@
 # Design: XMotion Telemetry Library (**xmTelemetry**)
 
-- Status: Draft
-- Date: 2026-07-02
+- Status: Draft (rev. 2 — re-layered per ADR 0004)
+- Date: 2026-07-03 (rev. 1: 2026-07-02)
 - Owners: XMotion Engineering
 - Rationale / evidence: [docs/research/otel-robotics-telemetry.typ](../research/otel-robotics-telemetry.typ) (the evaluation and strategy this document implements)
-- Naming: per [ADR 0003](../adr/0003-naming-and-branding.md) — the component is **xmTelemetry** (namespace `xmotion::telemetry`); the surface + spine live in **xmBase** (the foundation).
+- Governing decisions: [ADR 0004](../adr/0004-telemetry-layering.md) (API/SDK/exporter layering — **supersedes rev. 1's spine-in-xmBase placement**); [ADR 0003](../adr/0003-naming-and-branding.md) (component is **xmTelemetry**, namespace `xmotion::telemetry`; the API lives in **xmBase**)
 - Related: family ADRs `docs/adr/0001-component-architecture.md`
 
 ---
 
 ## 1. Purpose
 
-This document specifies a single, thin, **ROS-free** instrumentation library that every layer of the robot software — from a 1 kHz control loop through planning to decision-making — uses identically to emit logs, metrics, causal spans, high-rate signals, and health. Heavy, battle-tested engines (LTTng, NanoLog/Quill, MCAP, OpenTelemetry) are adopted behind it as pluggable, off-by-default sinks. It is the concrete realization of the research report's strategy (report §10): *own a thin spine, adopt the engines; coherence from one spine, lightness from pluggable compile-time-selected sinks.*
+This document specifies a single, thin, **ROS-free** instrumentation stack that every layer of the robot software — from a 1 kHz control loop through planning to decision-making — uses identically to emit logs, metrics, causal spans, high-rate signals, and health. Heavy, battle-tested engines (LTTng, MCAP, OpenTelemetry) are adopted behind it as pluggable, off-by-default exporters. It is the concrete realization of the research report's strategy (report §10): *own a thin spine, adopt the engines; coherence from one spine, lightness from pluggable compile-time-selected sinks.*
 
-This is not a new telemetry engine. It is the **axle** that binds adopted engines coherently to the XMotion HAL. We build only the surface, the spine, the capture boundary, and the routing; everything else is adopted.
+This is not a new telemetry engine. It is the **axle** that binds adopted engines coherently to the XMotion components. We build only the API, the capture machinery, and the routing; everything else is adopted.
 
 ## 2. Goals and non-goals
 
 ### Goals
 
-- One instrumentation **surface** (≈4 verbs) usable identically in RT and non-RT code.
-- **ROS-free** core: links into non-ROS control code and ROS 2 nodes alike.
+- One instrumentation **API** (≈4 verbs) usable identically in RT and non-RT code.
+- **ROS-free**: links into non-ROS control code and ROS 2 nodes alike.
 - **Real-time safe** hot path: allocation-free, lock-free, bounded, and compile-out-able.
-- **Lightweight core**: header-light, no heavy dependency in the foundation; heavy sinks isolated and optional.
+- **Honestly optional machinery**: the foundation carries only a stateless API; *all* runtime machinery (threads, buffers, aggregation) lives in the optional xmTelemetry component — the OpenTelemetry API/SDK relationship, applied here (ADR 0004).
+- **Crash-consistent recording**: the last N seconds before a crash — the flight recorder's defining moment — must survive the process (report §7 "keep the rare event").
 - **Coherent**: one monotonic time base and one correlation identity across all layers, so a control glitch, a planning stall, and a decision flip line up on one timeline.
-- **Backend-flexible**: sinks (MCAP, OTLP/OpenTelemetry, LTTng) selected at compile/link time without touching call sites.
+- **Backend-flexible**: exporters (MCAP, OTLP/OpenTelemetry, LTTng) selected at compile/link time without touching call sites.
 
 ### Non-goals
 
-- Not a safety monitor. The safety plane (watchdog / e-stop / deadline enforcement) is independent and is out of scope (report §3, §4).
-- Not a metrics/trace *engine* — we do not reimplement OTLP encoding, histogram aggregation, lockless buffering, or exporters.
+- Not a safety monitor. The safety plane (watchdog / e-stop / deadline enforcement) is independent and out of scope (report §3, §4); telemetry never shares fate with the failsafe.
+- Not a metrics/trace *engine* — we do not reimplement OTLP encoding, exporters, or backend protocols.
 - Not a fleet backend — Grafana/Tempo/Foxglove/OTel Collector are external.
 - Not a ROS package — any ROS glue lives in an optional application-side bridge (report §10.5).
 
-## 3. Scope: what we are building, where it lives
+## 3. Scope: three tiers, two homes (ADR 0004)
 
-The library splits across two homes, following the family's downward-only dependency rule.
+| Tier | Home | Contents | Dependency weight | Linked |
+|------|------|----------|-------------------|--------|
+| **API** | **xmBase** module `xmbase/telemetry` | the 4 verbs + health, handles, ids/context + inject/extract, monotonic clock, compile-out floor | std only; **no state, no threads** | always |
+| **SDK** | **xmTelemetry** core | handle table, capture channels (ring), per-QoS-class buffers, drain thread, router, metric aggregation, Null/Console sinks, lifecycle | std only, light | optional |
+| **Exporters** | **xmTelemetry**, one CMake option each | McapSink + flight recorder + `xmtelemetry-recover`, OtelSink → OTLP, LTTng channel, host collectors | heavy / external | opt-in each |
+| **ROS bridge** | application layer (xmBot-\*) | ROS time mapping, header-id ingress, rosbag2/ros2_tracing glue | ROS 2 | app choice |
 
-| Piece | Home | Dependency weight | Always built? |
-|-------|------|-------------------|---------------|
-| **Surface + spine + capture boundary** (the *axle*) | **xmBase** module `xmbase/telemetry` | Header-light, `std` only | Yes |
-| **Sinks + collectors** (the adopted *engines*) | **xmTelemetry** (new component) | LTTng / MCAP / OpenTelemetry | No — optional, per-sink CMake option |
-| **ROS bridge** (time/id/rosbag2/ros2_tracing glue) | **Application layer** (xmBot-\*) | ROS 2 | No — app choice |
+Why the API lives in xmBase: every component depends on the foundation, so the API must live there to be callable everywhere — and it must therefore be stateless and dependency-free. Why *everything else* lives in xmTelemetry: so "optional" is literally true — a lean/embedded or RT-partition build that links only xmBase pays for **nothing** (no thread, no buffer, no dependency), exactly as an OTel API-only library pays nothing until an application installs the SDK.
 
-Why the surface lives in xmBase: every component depends on the foundation, so the surface must live there to be callable everywhere, and it must therefore be dependency-light. Why a separate xmTelemetry component for sinks: the heavy engines must be isolatable and optional so a lean/embedded build (or the RT partition) never pays for them.
+**Dependency rule (must hold):** components (xmDriver, xmNavigation, …) instrument against the **API only**. Only the application links the xmTelemetry SDK and selects exporters. `xmBase` never depends on `xmTelemetry`; neither ever depends on ROS.
 
 ## 4. Architecture
 
-Three planes (report §4), with this library owning the observability and recording data paths and staying out of the safety plane:
+Three planes (report §4), with this stack owning the observability and recording data paths and staying out of the safety plane:
 
 ```
-  app / ROS2 node        control loop (µs)      planning / decision
-        │                      │                       │
-        ▼                      ▼ (RT subset)            ▼
-  ┌────────────── SURFACE (xmotion::telemetry, in xmBase) ────────────────────┐
-  │   event()   metric()   scope()   signal()      [+ health() convention]    │
-  └───────────────┬───────────────────────────────────────────────┬──────────┘
-                  │ POD record (no format, no alloc)               │
-        ┌─────────▼─────────┐  wait-free ring (xmBase)    handles (atomic)
-        │   CAPTURE BOUNDARY │  ── drop policy, bounded ──┐
-        └─────────┬─────────┘                            │
-                  │ non-RT drain thread (xmBase)         │
-        ┌─────────▼────────────── ROUTER (xmBase) ───────┴────────┐
-        │  diagnostics → OTel sink        raw signal → MCAP sink   │
-        └──────┬───────────────────────────────┬──────────────────┘
-               ▼                                ▼
-        ┌────────────┐  ┌────────────┐   ┌────────────┐  (sinks in xmTelemetry, optional)
-        │  OtelSink  │  │ LttngSink  │   │  McapSink  │
-        │ →OTLP/Coll.│  │ (optional) │   │ →flight rec│
-        └────────────┘  └────────────┘   └────────────┘
+   xmDriver / xmNavigation / app code          control loop (µs, RT subset)
+        │                                            │
+        ▼                                            ▼
+  ┌───────────── TIER 1: API (xmotion::telemetry, in xmBase) ─────────────────┐
+  │  event()  metric()  scope()  signal()   [+ health() convention]           │
+  │  handles · TraceId/Context · Now() · inject/extract · compile-out floor   │
+  │  unbound default: event ≥ Warn → stderr; everything else → no-op          │
+  └───────┬───────────────────────────────────────────────────────────────────┘
+          │ bound ONCE at telemetry::Init() — install-time handle table;
+          │ handles resolve at registration, never per call
+  ┌───────▼──────── TIER 2: SDK (xmTelemetry core, optional) ─────────────────┐
+  │  CHANNELS (wait-free ring):  heap │ mmap BLACK BOX (tmpfs) │ LTTng UST    │
+  │  per-QoS-class rings (diagnostics ≠ signals) · drop-newest + counted      │
+  │  metric aggregation (atomics, drain-sampled) · drain thread · ROUTER      │
+  │  NullSink / ConsoleSink · Init()/Shutdown() lifecycle                     │
+  └───────┬──────────────────────────────────────────┬────────────────────────┘
+          │ diagnostics (event/metric/span)          │ raw signals
+  ┌───────▼──────────┐  ┌────────────────┐  ┌────────▼─────────┐  TIER 3: exporters
+  │ OtelSink → OTLP  │  │ LTTng channel  │  │ McapSink         │  (xmTelemetry,
+  │ → Collector      │  │ (kernel corr.) │  │ flight recorder  │   one option each)
+  │   (per-host)     │  └────────────────┘  │ + recover tool   │
+  └──────────────────┘                      └──────────────────┘
 ```
 
-Dependency directions (must hold): `app → xmTelemetry → xmBase`; `app → ROS`; **never** `xmBase → xmTelemetry`, **never** `xmBase/xmTelemetry → ROS`. The RT hot path calls only the surface (in xmBase) and never touches a sink.
+Dependency directions: `app → xmTelemetry → xmBase`; `app → ROS`; **never** `xmBase → xmTelemetry`, **never** `xmBase/xmTelemetry → ROS`. The RT hot path calls only the API; with the SDK bound, a call is an atomic update or a wait-free ring push — never a sink, a lock, or an allocation.
 
-## 5. The surface (public API sketch)
+## 5. The API (public surface sketch)
 
 Illustrative C++17, namespace `xmotion::telemetry`. Signatures are indicative, not final.
 
@@ -93,6 +98,9 @@ struct Context { TraceId trace; SpanId span; };
 
 Context CurrentContext() noexcept;              // thread-local
 void    SetCurrentContext(Context) noexcept;    // set by the message carrier at ingress
+// envelope helpers: serialize/parse Context for message headers (any IPC)
+std::array<std::uint8_t, 24> Inject(Context) noexcept;
+Context Extract(const std::uint8_t* bytes, std::size_t len) noexcept;
 
 // Process/robot identity (OTel "resource"), set once at startup
 void SetResource(std::string_view key, std::string_view value);
@@ -108,9 +116,12 @@ namespace xmotion::telemetry {
 enum class Severity { kTrace, kDebug, kInfo, kWarn, kError };
 // RT-safe: message string is compile-time-extracted; only args are copied,
 // formatting is deferred to the drain (NanoLog/Quill pattern).
-#define XM_EVENT(sev, fmt, ...)   /* expands to an alloc-free record push */
+#define XM_EVENT(sev, fmt, ...)   /* alloc-free record push (stderr if unbound, sev>=Warn) */
 
 // ---- 2. METRIC — pre-registered handles, atomic RT-safe updates -------------
+// Handle types are API; their backing slots are SDK-allocated at registration
+// (or a shared no-op slot when no SDK is bound). Aggregation state lives in the
+// SDK and is sampled by the drain — no ring traffic per increment (ADR 0004 §6).
 class Counter   { public: void Add(double v = 1.0) noexcept; };
 class Gauge     { public: void Set(double v) noexcept; };
 class Histogram { public: void Record(double v) noexcept; };
@@ -121,13 +132,13 @@ Histogram& GetHistogram(std::string_view name);
 // ---- 3. SCOPE — causal timing span, RAII, links to CurrentContext -----------
 class Scope {
  public:
-  explicit Scope(std::string_view name) noexcept;  // begin
+  explicit Scope(std::string_view name) noexcept;  // begin (record push)
   ~Scope();                                         // end (records duration)
 };
 #define XM_SCOPE(name) ::xmotion::telemetry::Scope XM_UNIQUE(name)
 
 // ---- 4. SIGNAL — high-rate typed sample → recording plane -------------------
-template <typename T>
+template <typename T>  // T: trivially copyable; schema registered at GetChannel
 class SignalChannel { public: void Publish(const T& sample, Timestamp t = Now()) noexcept; };
 template <typename T> SignalChannel<T>& GetChannel(std::string_view name);
 
@@ -138,28 +149,50 @@ void ReportHealth(std::string_view subsystem, HealthState s,
 }
 ```
 
-### 5.3 RT-safe subset vs full surface
+### 5.3 Binding and lifecycle (SDK side, called by the application)
 
-The *same* API serves both contexts; cost differs by *how* you call it, not by a different API:
+```cpp
+namespace xmotion::telemetry {
+struct SdkConfig {
+  ChannelKind channel = ChannelKind::kHeap;   // kHeap | kBlackBox | kLttng
+  std::string blackbox_path;                  // e.g. /dev/shm/xmtelemetry-<proc>.ring
+  std::size_t diagnostics_ring_capacity = 8192;
+  std::size_t signal_ring_capacity      = 65536;
+  // ... sink registration, export cadence, metric sample period
+};
+void Init(SdkConfig);   // installs the handle table; BEFORE RT begins
+void Shutdown();        // drain + flush + unbind; BEFORE static destruction
+}
+```
 
-- **RT hot path (control loop):** pre-register handles at init (`GetCounter`, `GetChannel`); on the hot path call only `counter.Add()`, `gauge.Set()`, `channel.Publish()`, `XM_EVENT` (deferred format), and `XM_SCOPE`. All are `noexcept`, allocation-free, and push a POD record into the wait-free ring.
-- **Non-RT (planning/decision/app):** may additionally use string/lookup-by-name forms, richer attributes, and formatted events.
+Binding is an **install-once handle table**: handles resolve to SDK-allocated slots at registration time, so the hot path has zero per-call indirection beyond a pointer fixed at init. No weak symbols, no per-call provider lookup (ADR 0004 §3). Registration after `Init()` but before RT is the contract; late registration is allowed but may allocate (non-RT only).
 
-This is what "integrate everywhere" means concretely: one small vocabulary, two cost profiles.
+### 5.4 RT-safe subset vs full surface; no-SDK behavior
 
-## 6. The capture boundary (the differentiating design work)
+The *same* API serves both contexts; cost differs by *how* you call it:
 
-The hot path never formats, serializes, allocates, blocks, or calls a sink. It writes a fixed-size POD **record** into a wait-free ring; a non-RT **drain** thread pops records and hands them to the router. This is the one place real design rigor is warranted (report §RT-line discussion).
+- **RT hot path (control loop):** pre-register handles at init; on the hot path call only `counter.Add()`, `gauge.Set()`, `channel.Publish()`, `XM_EVENT` (deferred format), and `XM_SCOPE`. All `noexcept`, allocation-free: atomic updates or wait-free ring pushes.
+- **Non-RT (planning/decision/app):** may additionally use lookup-by-name forms, richer attributes, formatted events.
+- **No SDK bound (xmBase-only build):** `event()` at Warn+ writes synchronously to stderr — a lib-only build never silently swallows a fault (today's `XLOG` behavior preserved); `metric`/`scope`/`signal` are no-ops. The compile-time floor (`XM_TELEMETRY_LEVEL`) additionally strips below-floor call sites entirely.
+
+## 6. The capture machinery (SDK; the differentiating design work)
+
+The hot path never formats, serializes, allocates, blocks, or calls a sink. It writes a fixed-size POD **record** into a wait-free ring **channel**; a non-RT **drain** thread pops records and hands them to the router.
 
 - **Record**: a small POD (`{ kind, timestamp, context, name-id, payload-union }`). Strings are pre-interned to ids at registration; no string copies on the hot path.
-- **Ring**: wait-free, bounded, single-producer-per-thread (SPSC) preferred, drained by one consumer. Start by evaluating an adopted lock-free ring (e.g. `rigtorp/SPSCQueue`, `folly::ProducerConsumerQueue`) before writing our own; adopt if it fits. For the flight recorder we may instead front the whole thing with **LTTng UST** (which *is* a wait-free ring + snapshot mode) — see §9.
-- **Drop policy** (explicit, configurable): on ring-full, **drop-newest + increment a dropped-count metric**; the producer must never block. The drop counter is itself telemetry, so overload is observable.
-- **Backpressure**: bounded by construction; the drain falling behind (e.g. during the incident) degrades to counted drops, never to a stalled control loop.
+- **Ring**: the proven bounded Vyukov MPSC ring already in the family (xmBase's `MpscRtLogger`: wait-free producers, no heap, no syscall, TSan-verified in CI), **migrated into the SDK** and generalized from spdlog records to telemetry records. *This closes rev. 1's open question — we adopt our own proven ring, no third-party ring dependency.*
+- **QoS class separation**: diagnostics (event/metric snapshots/spans) and high-rate signals use **separate rings**, so a 1 kHz signal flood can never evict an Error event (ADR 0004 §5).
+- **Drop policy** (explicit, per class): on ring-full, **drop-newest + increment a dropped-count metric**; the producer never blocks. The drop counter is itself telemetry, so overload is observable.
+- **Channels** (the ring's backing store, selected at `Init`):
+  - **heap** — default, portable;
+  - **mmap black box** — the same ring backed by a file-backed mmap on tmpfs with a versioned header (magic, schema hash, boot-id, monotonic→realtime offset captured at init). The buffer **survives process death**: after a crash, the `xmtelemetry-recover` CLI reads the mapping and emits the last N seconds as MCAP. This is LTTng's crash-recovery design (`lttng-crash`) without adopting its daemon (ADR 0004 §4). Survives a process crash, not power loss — persistence across power events is the flight-recorder snapshot's job;
+  - **LTTng UST** — opt-in, for kernel-correlated tracing where a session daemon is acceptable.
+- **Metrics bypass the ring**: `Add`/`Set`/`Record` are relaxed atomic updates on SDK-owned aggregation state (counters, gauges, fixed-boundary histogram buckets); the drain *samples* aggregates periodically into snapshot records for export. One atomic per metric beats a record per increment on both cost and memory bounds.
 - **Time**: every record is stamped with monotonic `Now()` at push; hardware capture timestamps (where a device provides them) travel in the payload.
 
-## 7. Sinks and routing
+## 7. Router, sinks, and exporters
 
-A `Sink` is the drain-side interface; sinks live in xmTelemetry and are registered at startup. The router (in xmBase) dispatches by record class.
+A `Sink` is the drain-side interface; the router dispatches by record class. Null/Console sinks ship in the SDK core (zero-config debug output); heavy exporters live behind per-sink CMake options.
 
 ```cpp
 namespace xmotion::telemetry {
@@ -169,81 +202,88 @@ class Sink {
   virtual void Consume(const Record& r) = 0;  // called on the drain thread only
   virtual void Flush() {}
 };
-void RegisterSink(std::unique_ptr<Sink>);       // at startup, before RT begins
+void RegisterSink(std::unique_ptr<Sink>);       // via SdkConfig / before RT begins
 }
 ```
 
-- **Routing**: *aggregatable diagnostics* (`event`/`metric`/`health`, and `scope` spans) → the OTel sink; *raw high-rate signals* (`signal`) → the MCAP sink. The router — not the call site — enforces this, so a 1 kHz raw stream never enters the metrics pipeline (report §6.2).
-- **Sinks (in xmTelemetry, each behind a CMake option):**
-  - `OtelSink` — maps records to OpenTelemetry metrics/logs/spans, exports via OTLP (to a local OTel Collector sidecar).
+- **Routing**: *aggregatable diagnostics* (`event`/`metric`/`health`, `scope` spans) → the OTel sink; *raw high-rate signals* (`signal`) → the MCAP sink. The router — not the call site — enforces this, so a 1 kHz raw stream never enters the metrics pipeline (report §6.2).
+- **Exporters** (each behind a CMake option):
+  - `OtelSink` — maps records to OpenTelemetry metrics/logs/spans, exports via OTLP to a **per-host OTel Collector** (one exporter per robot, not per process — the Collector is the multi-process aggregation point and the store-and-forward buffer for intermittent connectivity).
   - `McapSink` — writes `signal` records + a rolling **flight recorder** buffer to MCAP; snapshot-to-disk on a trigger (fault/e-stop/anomaly). Neutral encoding so files open in Foxglove and the ROS ecosystem.
-  - `LttngSink` (optional) — forwards to LTTng UST tracepoints for kernel-correlated, RT-grade tracing.
-  - `NullSink` / `ConsoleSink` — built into xmBase for zero-config and debug.
-- **Compile-time selection**: disabled instrumentation compiles to nothing; a build links only the sink libraries it enables. Default build (xmBase only) = surface + Null/Console sink, no external deps.
+  - LTTng — surfaced as a *channel* (§6), not a drain-side sink, so its own wait-free capture is not double-buffered behind ours.
+- **Compile-time selection**: disabled instrumentation compiles to nothing; a build links only the sink libraries it enables. Default application build = SDK + Null/Console sink, no external deps; library-only build = API, nothing else.
 
 ## 8. ROS-free / interoperability (per report §10.5)
 
-The library depends on none of rclcpp/rmw/DDS/rosbag2/ros2_tracing/ament. Interop is achieved at three seams, all outside the library:
+The stack depends on none of rclcpp/rmw/DDS/rosbag2/ros2_tracing/ament. Interop is achieved at three seams, all outside the library:
 
-- **Time**: core uses monotonic `Clock`; an app maps to ROS time (incl. sim `/clock`) at the boundary.
-- **Correlation id carrier**: the library owns the id type; a ROS node reads/writes it in a message header field, a non-ROS component in its DDS/shm envelope. `SetCurrentContext()` is the ingress hook.
-- **Recording**: MCAP is a format, not rosbag2; a ROS-free producer yields ROS-/Foxglove-readable artifacts. Because LTTng underlies both this library and ros2_tracing, a ROS app can correlate both in one LTTng session.
+- **Time**: core uses monotonic `Clock`; an app maps to ROS time (incl. sim `/clock`) at the boundary. The black-box header records the monotonic→realtime offset once for offline alignment.
+- **Correlation id carrier**: the library owns the id type; a ROS node reads/writes it in a message header field via `Inject`/`Extract`, a non-ROS component in its DDS/shm envelope. `SetCurrentContext()` is the ingress hook.
+- **Recording**: MCAP is a format, not rosbag2; a ROS-free producer yields ROS-/Foxglove-readable artifacts. Because LTTng can underlie both this stack and ros2_tracing, a ROS app can correlate both in one LTTng session.
 
 ## 9. Build, dependencies, and module layout
 
 ```
-components/sigma/               (xmBase — always built, light)
+components/sigma/               (xmBase — always built; API ONLY, stateless)
   include/xmbase/telemetry/
-    telemetry.hpp   # the 4 verbs — the ONE header app code includes
+    telemetry.hpp   # the 4 verbs — the ONE header component code includes
     time.hpp        # Clock, Timestamp, Now
-    context.hpp     # TraceId/SpanId/Context, current-context hooks
+    context.hpp     # TraceId/SpanId/Context, current-context, Inject/Extract
     health.hpp      # HealthState, ReportHealth
-    record.hpp      # POD Record type crossing the boundary
-    ring.hpp        # wait-free ring (adopted impl or thin wrapper)
-    sink.hpp        # Sink interface, RegisterSink, Router, drain
-  src/telemetry/    # drain thread, router, NullSink/ConsoleSink
-  test/telemetry/   # unit + RT-safety (ASan/TSan) + micro-benchmarks
+    handles.hpp     # Counter/Gauge/Histogram/SignalChannel handle types
+    binding.hpp     # the install-once handle-table seam (filled by the SDK)
+  src/telemetry/    # tiny: stderr default binding for unbound event()
+  # NOTE: xmbase/logging/ dissolves into this API — XLOG_*/XLOG_RT_* become
+  # facades over event(); the MpscRtLogger ring migrates to the SDK; spdlog
+  # leaves the foundation (ADR 0004 §7).
 
-components/telemetry/           (xmTelemetry — new component, optional sinks/collectors)
-  otel_sink/    # -> OpenTelemetry SDK / OTLP     (option XMTELEMETRY_WITH_OTEL)
-  mcap_sink/    # -> MCAP writer + flight recorder (option XMTELEMETRY_WITH_MCAP)
-  lttng_sink/   # -> LTTng UST                     (option XMTELEMETRY_WITH_LTTNG)
-  collectors/   # host CPU/PSI/GPU/thermal -> metrics
+components/telemetry/           (xmTelemetry — optional; SDK core + exporters)
+  sdk/            # handle table, channels (heap | blackbox | lttng), rings,
+                  # drain, router, metric aggregation, Null/Console sinks,
+                  # Init/Shutdown
+  blackbox/       # mmap channel format + xmtelemetry-recover CLI  (in core)
+  otel_sink/      # -> OpenTelemetry SDK / OTLP     (option XMTELEMETRY_WITH_OTEL)
+  mcap_sink/      # -> MCAP writer + flight recorder (option XMTELEMETRY_WITH_MCAP)
+  lttng_channel/  # -> LTTng UST                     (option XMTELEMETRY_WITH_LTTNG)
+  collectors/     # host CPU/PSI/GPU/thermal -> metrics (option XMTELEMETRY_WITH_HOST)
   test/
 
 <app repos>/                    (ROS glue lives here, optional)
-  ros_bridge/   # ROS time, header-id ingress, rosbag2/ros2_tracing export
+  ros_bridge/     # ROS time, header-id ingress, rosbag2/ros2_tracing export
 ```
 
-Dependencies: the xmBase telemetry surface adds **zero** external deps (std only). xmTelemetry sinks each pull their engine only when enabled. CMake options gate every heavy dependency; the default umbrella build stays light.
+Dependencies: the xmBase API adds **zero** external deps (std only) and no compiled machinery beyond the stderr fallback. The xmTelemetry SDK core is std-only. Exporters each pull their engine only when enabled. The default umbrella build stays light.
 
 ## 10. Phased implementation plan
 
 Each phase is independently useful, buildable, and testable. Ship in order.
 
-- **P0 — Surface + spine + boundary (xmBase), Null/Console sink.** The 4 verbs, `Now`, context, health, the POD record, the ring + drain + router, and a Console/Null sink. Zero external deps. Outcome: code can be instrumented everywhere; output is console/no-op. *This is the MVP and the highest-leverage step.*
-- **P1 — Wait-free ring hardening + benchmarks.** Adopt/validate the ring; ASan/TSan clean; a benchmark asserting the hot path is allocation-free and bounded (hooked allocator + p99 latency). Drop-policy tests.
-- **P2 — McapSink + flight recorder (xmTelemetry).** `signal` → MCAP; rolling buffer + snapshot-on-trigger. Verify files open in Foxglove.
-- **P3 — OtelSink + Collector (xmTelemetry).** diagnostics → OTLP → local OTel Collector → Grafana. Host-metrics semantic conventions.
-- **P4 — Host collectors (xmTelemetry).** PSI, per-core CPU, memory, thermal, GPU (NVML/tegrastats) → metrics.
-- **P5 — LttngSink (optional) + app-side ROS bridge.** RT-grade tracing; ROS correlation.
-- **Cross-cutting — xmDriver adoption.** Migrate xmDriver's device drivers to emit their existing signals (`FreshnessMonitor` age, tx-queue depth, fault counters, `DeviceHealth`) through the surface. Low effort, high value — xmDriver already produces the data.
+- **P0 — API (xmBase) + SDK skeleton (xmTelemetry).** The 4 verbs, handles, context, clock, compile-out floor, stderr default binding; SDK with `Init`/`Shutdown`, handle table, **heap channel migrated from `MpscRtLogger`**, drain, router, Null/Console sinks. Outcome: any component can be instrumented; console output when the SDK is linked, stderr warnings otherwise. *MVP; the ring is already proven, so P0 risk is integration, not concurrency.*
+- **P1 — Hardening + logging unification.** ASan/TSan/benchmarks (hot path provably alloc-free + bounded; drop-policy and flood-isolation tests). Re-point `XLOG_*`/`XLOG_RT_*` onto `event()` once the console path reaches parity; retire the duplicate ring/drain in `xmbase/logging`.
+- **P2 — Black box.** The mmap channel + versioned header + `xmtelemetry-recover` → MCAP. Crash-kill tests: `SIGKILL` mid-load, recover, verify the tail.
+- **P3 — McapSink + flight recorder.** Live `signal` → MCAP; rolling buffer + snapshot-on-trigger. Verify files open in Foxglove.
+- **P4 — OtelSink + Collector + host collectors.** Diagnostics → OTLP → per-host OTel Collector → Grafana; PSI/CPU/thermal/GPU collectors; semantic conventions.
+- **P5 — LTTng channel + app-side ROS bridge.** Kernel-correlated tracing; ROS correlation.
+- **Cross-cutting — xmDriver adoption.** Migrate xmDriver's drivers to emit their existing signals (`FreshnessMonitor` age, tx-queue depth, fault counters, `DeviceHealth`) through the API. Low effort, high value — the data already exists, and xmDriver gains no new dependency (API only).
 
 ## 11. Testing and verification
 
-- **Unit tests** per module (surface semantics, router, health, sinks with fakes).
-- **RT-safety**: ASan + UBSan over the suite (the family already runs these in CI); TSan over the drain/producer paths; a benchmark test that fails if the hot path allocates or exceeds a latency bound.
-- **Overflow/drop**: fill the ring under a stalled drain, assert bounded memory + counted drops + no producer block.
+- **Unit tests** per module (API semantics, binding/no-op behavior, router, health, sinks with fakes).
+- **RT-safety**: ASan + UBSan over the suite; TSan over the drain/producer paths; a benchmark test that fails if the hot path allocates or exceeds a latency bound.
+- **Overflow/drop**: fill each ring class under a stalled drain; assert bounded memory, counted drops, no producer block, and that a signal flood drops **zero** diagnostics records.
+- **Crash consistency**: `SIGKILL` a producer mid-stream; `xmtelemetry-recover` must yield the expected tail; corrupted/partial header must fail safely.
+- **Layering**: an API-only link test (no SDK — must link, run, and stderr-report a Warn); a symbol/size check that a build with instrumentation compiled out contains none of it.
 - **Round-trip**: event/metric/span/signal → sink → decodable output (MCAP opens in Foxglove; OTLP arrives at a test Collector).
-- **No-op-when-off**: a build with all sinks disabled produces a binary with the instrumentation compiled out (verify symbol/size).
 
 ## 12. Risks and open questions
 
-- **Ring choice**: adopt an existing SPSC/MPSC ring vs. front everything with LTTng UST from the start. *Decision deferred to P1; the surface hides it.*
-- **MCAP encoding schema**: neutral (protobuf/flatbuffers/custom) for ROS-free interop vs. optional ros2msg channels via the app bridge.
+- **Black-box format stability**: the mmap header/record schema needs versioning discipline from day one (recover tool must reject or adapt to old layouts). Schema-hash field reserved for this.
+- **Signal channels and typed payloads**: `SignalChannel<T>` requires a POD-schema registration story (name + field layout) so MCAP output is self-describing; decide protobuf/flatbuffers/custom-schema encoding at P3.
 - **Attribute cardinality**: enforce a discipline (bounded attribute keys) so the OTel path stays healthy (report §6.2).
-- **xmBase/xmTelemetry boundary precision**: the drain lives in xmBase but dispatches to xmTelemetry-provided sinks; confirm the registration lifetime (sinks registered before RT begins, unregistered after RT ends).
+- **ConsoleSink backend**: start on spdlog (familiar), possibly drop to a bare formatter later so the SDK core is dependency-free in the strictest sense.
+- **Host daemon**: a per-host telemetry agent (shm protocol) was considered and deferred (ADR 0004); revisit if per-process export duplication becomes a measured cost.
+- ~~Ring choice~~ — **closed** (ADR 0004): adopt the family's proven Vyukov ring from `MpscRtLogger`.
 
 ## 13. Summary
 
-We build a small **axle**: a ROS-free, RT-safe, OTel-shaped instrumentation surface plus a spine and a wait-free capture boundary in xmBase, with adopted engines (MCAP, OpenTelemetry, LTTng) as optional compile-time-selected sinks in the new xmTelemetry component. Call sites are uniform across control, planning, and decision; the heavy machinery is isolated and optional; ROS is an application-layer consumer, never a dependency. Start at P0 (surface + spine + Null sink, zero deps) and add sinks incrementally.
+We build a small **axle** in three tiers that mirror OpenTelemetry's layering (ADR 0004): a stateless, ROS-free, RT-safe **API** in xmBase that every component can call unconditionally; an optional **SDK** in xmTelemetry holding all machinery — the proven wait-free ring (migrated from xmBase's RT logger) behind a channel abstraction whose mmap **black box** makes the flight recorder crash-consistent; and per-option **exporters** (MCAP, OTLP→Collector, LTTng) that adopt the heavy engines. Logging is not a separate system: `XLOG_*` becomes the `event()` verb of the same spine, so every log line, metric, span, and signal shares one clock and one correlation identity. Components instrument against the API alone; applications choose the machinery. Start at P0 (API + SDK skeleton) and add capabilities incrementally.
