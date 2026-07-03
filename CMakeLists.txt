@@ -16,7 +16,7 @@ project(xMotion VERSION 0.1.0 LANGUAGES CXX)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 # -- Options ----------------------------------------------------------------
-# xmSigma (foundation) is always built. The rest are opt-in so a consumer only
+# xmBase (foundation) is always built. The rest are opt-in so a consumer only
 # pays for the dependency footprint it actually needs.
 option(XMOTION_WITH_MU    "Build xmMu (host hardware drivers)"   ON)
 option(XMOTION_WITH_NABLA "Build xmNabla (motion algorithms)"    ON)
@@ -35,7 +35,7 @@ function(xmotion_add_component name dir)
 endfunction()
 
 # -- Assemble (dependency order: foundation first) --------------------------
-xmotion_add_component(xmSigma components/sigma)
+xmotion_add_component(xmBase components/sigma)
 
 if(XMOTION_WITH_MU)
   xmotion_add_component(xmMu components/mu)
