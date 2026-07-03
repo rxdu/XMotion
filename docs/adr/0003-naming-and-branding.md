@@ -78,16 +78,28 @@ If any of the three cannot be generated from the word, the naming is wrong. (`xm
 
 ## Migration
 
-Split by cost; **fix the brand now, migrate code behind aliases**:
+**Clean break — no compatibility shims.** Each repo's rename replaces the old identifiers outright: no target aliases (`xmotion::xmSigma`), no compat package configs (`find_package(xmSigma)`), no namespace forwarding (`namespace hal = driver`). A renamed component therefore breaks its dependents until they are migrated, so renames proceed **foundation-up, in lockstep**, and the umbrella Assembly CI is red during a transition *by design* — the same trade-off as the ADR-0001 / HAL clean-replace. There is no "partially migrated but green" state.
 
-- **Brand + docs (now):** update READMEs, the component table, this repo's docs, and logos; retire `xmSigma`/`xmMu`/… from human-facing text; demote the Greek letters to marks.
-- **Code identifiers (gradual, aliased, no churn):**
-  - `xmotion::hal` → `xmotion::driver`, keeping `namespace hal = driver;` so existing code compiles while new code adopts `xmotion::driver::…`; retire `hal` over time. (If "HAL" is worth preserving as a concept, it becomes the sub-namespace `xmotion::driver::hal`.)
-  - CMake package `xmotion-core` → `xmotion-base` (optional — package ids and namespaces are independent; may keep the id and fix only docs).
-- **Repos (optional, per-repo):** GitHub repo renames (`xmSigma`→`xmBase`, …) redirect old URLs automatically; do them when a repo is next touched, not as a big-bang.
+Per-repo rename checklist (everything → the new name):
+
+- **CMake:** `project()`, the library target, the `xmotion::<name>` alias, the export set, the generated package config, and the Debian package name.
+- **Headers:** the include prefix `include/xm<old>/` → `include/xm<new>/`, and every `#include "xm<old>/..."` across the repo.
+- **Identifiers & assets:** `XM<OLD>_*` macros, logo files, user-facing runtime strings, and docs. Brand casing `xMotion` → `XMotion`.
+- **Dependents (same wave):** `find_package(xm<old>)` → `find_package(xm<new>)`; `xmotion::xm<old>` → `xmotion::xm<new>`; `#include "xm<old>/..."` → `#include "xm<new>/..."`.
+
+Sequence:
+
+1. Rename the GitHub repo (old URLs redirect automatically).
+2. Land the internal clean rename so the repo builds standalone.
+3. Migrate the direct dependents to the new names.
+4. Bump the umbrella submodule pointer(s) once the component **and** its dependents are consistent.
+
+Human-facing brand/docs (READMEs, the component table, logos) may lead — they carry no build dependency. Historical ADRs keep the old names (records of past decisions): superseded, not rewritten.
+
+Precedent: `xmSigma` → **xmBase** was renamed this way (foundation, done); `xmMu` → **xmDriver** and `xmNabla` → **xmNavigation** follow, then the umbrella repins.
 
 ## Consequences
 
 - **Positive:** names are memorable, collision-free, and *derivable* (name, namespace, logo from one word); the XM/xm mark unifies brand and code; new components name themselves by the rule; the scheme survives a keyboard and a code search.
-- **Cost:** documentation churn now; a gradual, alias-backed migration of `xmotion::hal` and (optionally) the `xmotion-core` package id; optional repo renames.
+- **Cost:** a clean-break rename per repo (no compat shims), executed foundation-up; the umbrella Assembly CI is transiently red until each component and its dependents are migrated in the same wave.
 - **Scope:** this ADR governs naming/branding only; the ADR 0001 component architecture, dependency direction, and polyrepo+umbrella packaging are unchanged.
