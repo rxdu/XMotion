@@ -1,7 +1,7 @@
 name: Assembly
 
 # Validates that the umbrella superbuild assembles the pinned components
-# (xmSigma + xmMu + xmNabla) and builds them together — the cross-component
+# (xmBase + xmDriver + xmNavigation) and builds them together — the cross-component
 # integration each component's own CI cannot catch on its own.
 
 on:

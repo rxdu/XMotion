@@ -19,8 +19,8 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 # xmBase (foundation) is always built. The rest are opt-in so a consumer only
 # pays for the dependency footprint it actually needs.
 option(XMOTION_WITH_DRIVER    "Build xmDriver (host hardware drivers)"   ON)
-option(XMOTION_WITH_NABLA "Build xmNabla (motion algorithms)"    ON)
-option(XMOTION_WITH_GAMMA "Build xmGamma (visualization)"        OFF)
+option(XMOTION_WITH_NAVIGATION "Build xmNavigation (motion algorithms)"    ON)
+option(XMOTION_WITH_VIEWER "Build xmViewer (visualization)"        OFF)
 option(BUILD_TESTING      "Build component tests"                OFF)
 
 # -- Helper: add a component submodule if it is present ---------------------
@@ -41,14 +41,14 @@ if(XMOTION_WITH_DRIVER)
   xmotion_add_component(xmDriver components/mu)
 endif()
 
-if(XMOTION_WITH_NABLA)
-  xmotion_add_component(xmNabla components/nabla)
+if(XMOTION_WITH_NAVIGATION)
+  xmotion_add_component(xmNavigation components/nabla)
 endif()
 
-if(XMOTION_WITH_GAMMA)
-  xmotion_add_component(xmGamma components/gamma)
+if(XMOTION_WITH_VIEWER)
+  xmotion_add_component(xmViewer components/gamma)
 endif()
 
 message(STATUS "xMotion ${PROJECT_VERSION}: configured "
-               "(DRIVER=${XMOTION_WITH_DRIVER} NABLA=${XMOTION_WITH_NABLA} "
-               "GAMMA=${XMOTION_WITH_GAMMA})")
+               "(DRIVER=${XMOTION_WITH_DRIVER} NAVIGATION=${XMOTION_WITH_NAVIGATION} "
+               "VIEWER=${XMOTION_WITH_VIEWER})")
