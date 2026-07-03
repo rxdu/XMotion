@@ -1,6 +1,6 @@
 [submodule "components/sigma"]
 	path = components/sigma
-	url = https://github.com/rxdu/xmSigma.git
+	url = https://github.com/rxdu/xmBase.git
 	branch = main
 [submodule "components/mu"]
 	path = components/mu

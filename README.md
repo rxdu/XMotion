@@ -23,7 +23,7 @@ This repository is the **umbrella**: a thin CMake superbuild that assembles the 
 |---|-----------|------|------|
 | **κ** | xmBoard | PCB / electronics (KiCAD) | [rxdu/xmKappa](https://github.com/rxdu/xmKappa) |
 | **ζ** | xmFirmware | MCU firmware (Zephyr) | [rxdu/xmZeta](https://github.com/rxdu/xmZeta) |
-| **Σ** | xmBase | foundation — logging · ipc · math · common types | [rxdu/xmSigma](https://github.com/rxdu/xmSigma) |
+| **Σ** | xmBase | foundation — logging · ipc · math · common types | [rxdu/xmBase](https://github.com/rxdu/xmBase) |
 | **μ** | xmDriver | host hardware drivers — motor · CAN · serial · modbus · sbus · imu | [rxdu/xmMu](https://github.com/rxdu/xmMu) |
 | **∇** | xmNavigation | motion algorithms — planning · control · estimation · mapping&nbsp;·&nbsp;*centerpiece* | [rxdu/xmNabla](https://github.com/rxdu/xmNabla) |
 | **γ** | xmViewer | visualization | [rxdu/quickviz](https://github.com/rxdu/quickviz) |
