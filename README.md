@@ -21,11 +21,11 @@ This repository is the **umbrella**: a thin CMake superbuild that assembles the 
 
 |   | Component | Role | Repo |
 |---|-----------|------|------|
-| **κ** | xmBoard | PCB / electronics (KiCAD) | [rxdu/xmKappa](https://github.com/rxdu/xmKappa) |
-| **ζ** | xmFirmware | MCU firmware (Zephyr) | [rxdu/xmZeta](https://github.com/rxdu/xmZeta) |
+| **κ** | xmBoard | PCB / electronics (KiCAD) | [rxdu/xmBoard](https://github.com/rxdu/xmBoard) |
+| **ζ** | xmFirmware | MCU firmware (Zephyr) | [rxdu/xmFirmware](https://github.com/rxdu/xmFirmware) |
 | **Σ** | xmBase | foundation — logging · ipc · math · common types | [rxdu/xmBase](https://github.com/rxdu/xmBase) |
 | **μ** | xmDriver | host hardware drivers — motor · CAN · serial · modbus · sbus · imu | [rxdu/xmDriver](https://github.com/rxdu/xmDriver) |
-| **∇** | xmNavigation | motion algorithms — planning · control · estimation · mapping&nbsp;·&nbsp;*centerpiece* | [rxdu/xmNabla](https://github.com/rxdu/xmNabla) |
+| **∇** | xmNavigation | motion algorithms — planning · control · estimation · mapping&nbsp;·&nbsp;*centerpiece* | [rxdu/xmNavigation](https://github.com/rxdu/xmNavigation) |
 | **γ** | xmViewer | visualization | [rxdu/quickviz](https://github.com/rxdu/quickviz) |
 
 Component names follow [ADR 0003](docs/adr/0003-naming-and-branding.md); the Greek letters (κ ζ Σ μ ∇ γ) are retained as logos, and the repo links keep their current names until each is renamed. Everything builds on **xmBase**; dependencies point downward only. Two pairs span the boundary: **xmBase/xmDriver** on the host, **xmFirmware/xmBoard** on the embedded target — with **xmNavigation** the motion-algorithms core.
