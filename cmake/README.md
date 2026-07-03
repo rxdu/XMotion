@@ -1,6 +1,6 @@
 # cmake/
 
-Shared CMake helpers for the xMotion superbuild and components: toolchain
+Shared CMake helpers for the XMotion superbuild and components: toolchain
 defaults, dependency-finding modules, and install/export helpers.
 
 Populated as the components are extracted and their build rules are unified

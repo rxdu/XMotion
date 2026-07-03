@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>xMotion icon explorer</title>
+<title>XMotion icon explorer</title>
 <style>
   :root{--bg:#0e1016;--fg:#e6e9ef;--muted:#8b93a7;--panel:#161b26;--line:#262d3b;--accent:#10B6C6;}
   *{box-sizing:border-box}
@@ -40,7 +40,7 @@
 </head>
 <body>
 <aside>
-  <h1>xMotion icon explorer</h1>
+  <h1>XMotion icon explorer</h1>
   <div class="sub">Scientific motifs by default. Tune the design, pick per-icon diagrams, copy the spec back to me to bake into the real files.</div>
   <div class="group"><h3>Presets</h3><div class="presets" id="presets"></div></div>
   <div class="group"><h3>Palette</h3><div class="seg" id="palette"></div></div>
@@ -66,12 +66,12 @@ const PALETTES = {
   slate: ['#AEB6C6','#AEB6C6','#AEB6C6','#AEB6C6','#AEB6C6','#AEB6C6'],
 };
 const ICONS = [
-  {id:'xmsigma', sym:'Σ', name:'xmSigma', i:0, variants:{covariance:'covariance ellipse', hub:'connected hub', layers:'foundation layers'}},
-  {id:'xmmu',    sym:'μ', name:'xmMu',    i:1, variants:{imu:'IMU (3-axis + gyro)', gauge:'gauge / meter', encoder:'rotary encoder', sensor:'sensor field', bus:'comms bus', canbus:'CAN differential bus', rotor:'rotating motor', motor:'electric motor', pwm:'PWM → motor', hbridge:'H-bridge driver', friction:'friction free-body'}},
-  {id:'xmnabla', sym:'∇', name:'xmNabla', i:2, variants:{vfield:'vector field (sink)', vflow:'flow field to goal', vflowbold:'flow field (bold)', gradient:'gradient on contours', path:'trajectory', triangle:'bold ∇'}},
-  {id:'xmgamma', sym:'γ', name:'xmGamma', i:3, variants:{surface:'3D gamma distribution', surfacebold:'3D gamma (bold mesh)', gammacurve:'gamma response curve', window:'viewer window', axes3d:'3D axes'}},
-  {id:'xmzeta',  sym:'ζ', name:'xmZeta',  i:4, variants:{uart:'UART decode view', uartballoon:'UART decode (value)', uartbits:'UART decode (bits)', serial:'serial data frame', txrx:'TX/RX link', canbus:'CAN differential bus', bustopo:'bus topology', fwfile:'firmware image (file)', codewin:'code editor', binary:'binary stream', terminal:'terminal / console', chip:'MCU chip', stepresponse:'2nd-order step response', wave:'damped oscillation'}},
-  {id:'xmkappa', sym:'κ', name:'xmKappa', i:5, variants:{pcbfan:'PCB — valid (K-lean)', pcbfan2:'PCB — valid fan-out', pcbbreakout:'PCB — breakout (enriched)', pcbqfp:'PCB — diff-pair (balanced)', schematic:'circuit schematic', osculating:'osculating circle κ=1/R', trace:'trace + via'}},
+  {id:'xmsigma', sym:'Σ', name:'xmBase', i:0, variants:{covariance:'covariance ellipse', hub:'connected hub', layers:'foundation layers'}},
+  {id:'xmmu',    sym:'μ', name:'xmDriver',    i:1, variants:{imu:'IMU (3-axis + gyro)', gauge:'gauge / meter', encoder:'rotary encoder', sensor:'sensor field', bus:'comms bus', canbus:'CAN differential bus', rotor:'rotating motor', motor:'electric motor', pwm:'PWM → motor', hbridge:'H-bridge driver', friction:'friction free-body'}},
+  {id:'xmnabla', sym:'∇', name:'xmNavigation', i:2, variants:{vfield:'vector field (sink)', vflow:'flow field to goal', vflowbold:'flow field (bold)', gradient:'gradient on contours', path:'trajectory', triangle:'bold ∇'}},
+  {id:'xmgamma', sym:'γ', name:'xmViewer', i:3, variants:{surface:'3D gamma distribution', surfacebold:'3D gamma (bold mesh)', gammacurve:'gamma response curve', window:'viewer window', axes3d:'3D axes'}},
+  {id:'xmzeta',  sym:'ζ', name:'xmFirmware',  i:4, variants:{uart:'UART decode view', uartballoon:'UART decode (value)', uartbits:'UART decode (bits)', serial:'serial data frame', txrx:'TX/RX link', canbus:'CAN differential bus', bustopo:'bus topology', fwfile:'firmware image (file)', codewin:'code editor', binary:'binary stream', terminal:'terminal / console', chip:'MCU chip', stepresponse:'2nd-order step response', wave:'damped oscillation'}},
+  {id:'xmkappa', sym:'κ', name:'xmBoard', i:5, variants:{pcbfan:'PCB — valid (K-lean)', pcbfan2:'PCB — valid fan-out', pcbbreakout:'PCB — breakout (enriched)', pcbqfp:'PCB — diff-pair (balanced)', schematic:'circuit schematic', osculating:'osculating circle κ=1/R', trace:'trace + via'}},
 ];
 const PAGEBG = {dark:'#0e1016', light:'#f4f5f7', check:'#2a2f3a'};
 const DEFAULTS = {
@@ -209,7 +209,7 @@ function spec(){
   if(state.rim!==DEFAULTS.rim) p.push(`rim opacity ${state.rim}`);
   if(state.watermark!==DEFAULTS.watermark) p.push(state.watermark<=0?'no symbol watermark':`watermark opacity ${state.watermark}`);
   const vch=ICONS.filter(ic=>state.variant[ic.id]!==DEFAULTS.variant[ic.id]).map(ic=>`${ic.name}=${state.variant[ic.id]}`);
-  let txt = (p.length||vch.length) ? `Update the xMotion icons: use ${p.length?p.join(', '):'the default form'}` : 'Keep the current default design (scientific motifs)';
+  let txt = (p.length||vch.length) ? `Update the XMotion icons: use ${p.length?p.join(', '):'the default form'}` : 'Keep the current default design (scientific motifs)';
   if(vch.length) txt += `${p.length?'; ':' with '}motif variants ${vch.join(', ')}`;
   txt+='.';
   const cfg={palette:state.palette,stroke:state.stroke,badge:state.badge,radius:state.radius,rim:state.rim,watermark:state.watermark,variant:state.variant};
