@@ -3,13 +3,13 @@
 #show: techreport.with(
   title: "Observability for Robots",
   subtitle: "An Evaluation of OpenTelemetry for Real-Time and Safety-Critical Robotic Systems",
-  org: "xMotion Family",
+  org: "XMotion Family",
   running-head: "Observability for Robots",
   report-number: "XM-TR-2026-01",
   version: "1.0",
   status: "Draft for review",
   authors: (
-    (name: "xMotion Engineering", email: "engineering@xmotion", affiliation: "xMotion Family"),
+    (name: "XMotion Engineering", email: "engineering@xmotion", affiliation: "XMotion Family"),
   ),
   abstract: [
     Cloud-native observability has converged on OpenTelemetry (OTel) as a
@@ -37,7 +37,7 @@
     task is not to build an engine but to bind them coherently. We propose a
     lightweight strategy --- one thin, OTel-shaped instrumentation surface plus a
     common spine, with the engines as pluggable, compile-time-selected sinks ---
-    and map it onto the xMotion component family.
+    and map it onto the XMotion component family.
   ],
   keywords: ("observability", "OpenTelemetry", "real-time systems", "robotics", "safety-critical", "telemetry", "flight recorder"),
   date: "July 2, 2026",
@@ -77,7 +77,7 @@ This report makes the disagreement precise. Specifically, we:
   cloud and robotic workloads using published rates and measurements (§6).
 + Ground the argument in *five case studies* from the literature (§7).
 + Enumerate the *gaps* a robotics stack must fill beyond OpenTelemetry (§8) and
-  map a concrete architecture onto the xMotion component family (§9).
+  map a concrete architecture onto the XMotion component family (§9).
 
 == Scope and non-goals
 
@@ -85,7 +85,7 @@ We consider host-side telemetry for a mobile robot: a multi-core Linux compute
 node (possibly with a GPU), one or more real-time control loops, a set of
 device drivers, and intermittent connectivity to a fleet backend. We treat the
 microcontroller/firmware tier only where it bears on safety independence. We do
-not evaluate specific commercial backends, and we do not benchmark the xMotion
+not evaluate specific commercial backends, and we do not benchmark the XMotion
 stack itself --- our quantitative claims are drawn from published,
 reproducible measurements and are used to establish *order-of-magnitude*
 arguments, not point estimates (see §10, Threats to Validity).
@@ -403,8 +403,8 @@ logging would re-derive published, battle-tested work. Second, a *framework*
 split emerges: the turnkey robotics tools (ros2_tracing, rosbag2,
 ros-opentelemetry) assume ROS 2, whereas the substrate primitives (LTTng,
 NanoLog/Quill, MCAP, OpenTelemetry, iceoryx) are framework-agnostic and adoptable
-by a non-ROS C++ family such as xMotion. The design task is therefore not to
-build an engine but to *bind* these engines coherently to the xMotion HAL without
+by a non-ROS C++ family such as XMotion. The design task is therefore not to
+build an engine but to *bind* these engines coherently to the XMotion HAL without
 bloat --- the subject of §10.
 
 = A Coherent, Lightweight Instrumentation Strategy
@@ -431,7 +431,7 @@ directly) is the same decoupling the family already applies to its logging vendo
 
 #figure(
   caption: [The division of labour. The owned "spine" is small and specific to the
-    xMotion HAL; the adopted engines are the mature commodity substrate.],
+    XMotion HAL; the adopted engines are the mature commodity substrate.],
   table(
     columns: (1fr, 1fr),
     align: (left, left),
@@ -508,21 +508,23 @@ framework-agnostic engines (LTTng, NanoLog/Quill, MCAP, OpenTelemetry); the
 ROS-coupled tools of #ref(<tab:related>) become optional application-side bridges,
 not library dependencies.
 
-= Recommended Architecture for the xMotion Family
+= Recommended Architecture for the XMotion Family
 
-The three-plane model maps onto the xMotion components (Σ foundation, μ drivers,
-∇ algorithms, γ visualization, ζ firmware) as shown in #ref(<fig:arch>).
+The three-plane model maps onto the XMotion components (xmBase foundation,
+xmDriver drivers, xmNavigation algorithms, xmViewer visualization, xmFirmware
+firmware; Greek letters retained as logos per ADR 0003) as shown in
+#ref(<fig:arch>).
 
 #figure(
-  caption: [Three-plane telemetry architecture mapped onto the xMotion family.
+  caption: [Three-plane telemetry architecture mapped onto the XMotion family.
     One monotonic time base and run/correlation id thread all planes.],
   ```
-  ┌──────────── SAFETY PLANE (independent, ζ / hardware) ─────────────┐
-  │  watchdog · e-stop · deadline monitor — NO OTel, no shared fate    │
-  └───────────────────────────────────────────────────────────────────┘
+  ┌────────── SAFETY PLANE (independent, xmFirmware / hardware) ──────────┐
+  │  watchdog · e-stop · deadline monitor — NO OTel, no shared fate       │
+  └───────────────────────────────────────────────────────────────────────┘
 
-  RT loop ─(wait-free ring: Σ rt_logger_mpsc)─► non-RT drain ─┬─► OBSERVABILITY
-  (µs budget, no OTel calls on this path)                     │   OTel API (Σ)
+  RT loop ─(wait-free ring: xmBase)─► non-RT drain ─────┬─► OBSERVABILITY
+  (µs budget, no OTel calls on this path)               │   OTel API (xmBase)
                                                               │   → OTLP → Collector
   device Health()/freshness, host PSI/CPU/GPU/thermal ────────┤   → fleet TSDB/Grafana
                                                               │
@@ -534,33 +536,35 @@ The three-plane model maps onto the xMotion components (Σ foundation, μ driver
   ```
 ) <fig:arch>
 
-/ Σ (foundation): owns the *spine* of §10 --- the four-verb instrumentation
+/ xmBase (foundation): owns the *spine* of §10 --- the four-verb instrumentation
   surface, the monotonic time base, the run/correlation-id convention, the domain
   health vocabulary, and the RT capture boundary contract --- as a light header
   plus small runtime with *no* heavy telemetry dependency in core.
-/ New telemetry component (optional, off by default): the adopted *engines* as
+/ xmTelemetry (new component, optional, off by default): the adopted *engines* as
   sinks behind the surface --- LTTng/NanoLog for RT capture, MCAP for recording,
   the OpenTelemetry SDK + Collector for export --- plus the host/GPU/thermal
-  collectors. Compile-time-selected; depends on Σ.
-/ ∇ (algorithms): the reaction/policy layer --- fuse health, enforce budgets, arm
-  the recorder, degrade or failsafe. The only layer permitted to act on telemetry.
-/ γ (quickviz): live on-robot visualization; Foxglove/Grafana for offline and
-  fleet analysis.
-/ ζ (firmware) + application/umbrella: the independent safety backstop; the
+  collectors. Compile-time-selected; depends on xmBase.
+/ xmNavigation (algorithms): the reaction/policy layer --- fuse health, enforce
+  budgets, arm the recorder, degrade or failsafe. The only layer permitted to act
+  on telemetry.
+/ xmViewer (visualization): live on-robot visualization; Foxglove/Grafana for
+  offline and fleet analysis.
+/ xmFirmware + application/umbrella: the independent safety backstop; the
   composition root that selects exporters, budgets, and retention; and the home of
   any optional ROS bridge (§10.5) --- ROS-specific glue lives here, never in the
   ROS-free library.
 
 The guiding invariant restates the safety argument in dependency terms:
-telemetry primitives point *down* into Σ, collectors are *optional peers*, and
-only ∇ may *react*. A collector that could trip a failsafe directly would couple
-observation to actuation --- exactly what independence forbids.
+telemetry primitives point *down* into xmBase, collectors are *optional peers*,
+and only xmNavigation may *react*. A collector that could trip a failsafe
+directly would couple observation to actuation --- exactly what independence
+forbids.
 
 = Threats to Validity
 
 Our quantitative claims are order-of-magnitude arguments built from published
 measurements on *representative* platforms, not a controlled benchmark of the
-xMotion stack; absolute overhead and latency figures are implementation- and
+XMotion stack; absolute overhead and latency figures are implementation- and
 hardware-dependent (kernel configuration, DDS vendor, SoC). The specific
 sampling ratio attributed to Dapper is illustrative of a policy, not a universal
 constant. The three-plane model is a design heuristic; some concerns

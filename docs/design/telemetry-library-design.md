@@ -1,9 +1,10 @@
-# Design: xMotion Telemetry Library (working name **xmTau · τ**)
+# Design: XMotion Telemetry Library (**xmTelemetry**)
 
 - Status: Draft
 - Date: 2026-07-02
-- Owners: xMotion Engineering
+- Owners: XMotion Engineering
 - Rationale / evidence: [docs/research/otel-robotics-telemetry.typ](../research/otel-robotics-telemetry.typ) (the evaluation and strategy this document implements)
+- Naming: per [ADR 0003](../adr/0003-naming-and-branding.md) — the component is **xmTelemetry** (namespace `xmotion::telemetry`); the surface + spine live in **xmBase** (the foundation).
 - Related: family ADRs `docs/adr/0001-component-architecture.md`
 
 ---
@@ -12,7 +13,7 @@
 
 This document specifies a single, thin, **ROS-free** instrumentation library that every layer of the robot software — from a 1 kHz control loop through planning to decision-making — uses identically to emit logs, metrics, causal spans, high-rate signals, and health. Heavy, battle-tested engines (LTTng, NanoLog/Quill, MCAP, OpenTelemetry) are adopted behind it as pluggable, off-by-default sinks. It is the concrete realization of the research report's strategy (report §10): *own a thin spine, adopt the engines; coherence from one spine, lightness from pluggable compile-time-selected sinks.*
 
-This is not a new telemetry engine. It is the **axle** that binds adopted engines coherently to the xMotion HAL. We build only the surface, the spine, the capture boundary, and the routing; everything else is adopted.
+This is not a new telemetry engine. It is the **axle** that binds adopted engines coherently to the XMotion HAL. We build only the surface, the spine, the capture boundary, and the routing; everything else is adopted.
 
 ## 2. Goals and non-goals
 
@@ -38,13 +39,11 @@ The library splits across two homes, following the family's downward-only depend
 
 | Piece | Home | Dependency weight | Always built? |
 |-------|------|-------------------|---------------|
-| **Surface + spine + capture boundary** (the *axle*) | **Σ (xmSigma)** module `xmsigma/telemetry` | Header-light, `std` only | Yes |
-| **Sinks + collectors** (the adopted *engines*) | **New component xmTau (τ)** | LTTng / MCAP / OpenTelemetry | No — optional, per-sink CMake option |
+| **Surface + spine + capture boundary** (the *axle*) | **xmBase** module `xmbase/telemetry` | Header-light, `std` only | Yes |
+| **Sinks + collectors** (the adopted *engines*) | **xmTelemetry** (new component) | LTTng / MCAP / OpenTelemetry | No — optional, per-sink CMake option |
 | **ROS bridge** (time/id/rosbag2/ros2_tracing glue) | **Application layer** (xmBot-\*) | ROS 2 | No — app choice |
 
-Why Σ for the surface: every component depends on Σ, so the surface must live there to be callable everywhere, and it must therefore be dependency-light. Why a separate τ for sinks: the heavy engines must be isolatable and optional so a lean/embedded build (or the RT partition) never pays for them.
-
-> Naming note: `xmTau (τ)` is a proposal consistent with the family's Greek-letter components (κ ζ Σ μ ∇ γ). The namespace for the surface is proposed as `xmotion::tm`. Both are open to change; nothing in this design depends on the names.
+Why the surface lives in xmBase: every component depends on the foundation, so the surface must live there to be callable everywhere, and it must therefore be dependency-light. Why a separate xmTelemetry component for sinks: the heavy engines must be isolatable and optional so a lean/embedded build (or the RT partition) never pays for them.
 
 ## 4. Architecture
 
@@ -54,34 +53,34 @@ Three planes (report §4), with this library owning the observability and record
   app / ROS2 node        control loop (µs)      planning / decision
         │                      │                       │
         ▼                      ▼ (RT subset)            ▼
-  ┌───────────────────────── SURFACE (xmotion::tm, in Σ) ─────────────────────┐
+  ┌────────────── SURFACE (xmotion::telemetry, in xmBase) ────────────────────┐
   │   event()   metric()   scope()   signal()      [+ health() convention]    │
   └───────────────┬───────────────────────────────────────────────┬──────────┘
                   │ POD record (no format, no alloc)               │
-        ┌─────────▼─────────┐  wait-free ring (Σ)         handles (atomic)
+        ┌─────────▼─────────┐  wait-free ring (xmBase)    handles (atomic)
         │   CAPTURE BOUNDARY │  ── drop policy, bounded ──┐
         └─────────┬─────────┘                            │
-                  │ non-RT drain thread (Σ)              │
-        ┌─────────▼──────────────── ROUTER (Σ) ──────────┴────────┐
+                  │ non-RT drain thread (xmBase)         │
+        ┌─────────▼────────────── ROUTER (xmBase) ───────┴────────┐
         │  diagnostics → OTel sink        raw signal → MCAP sink   │
         └──────┬───────────────────────────────┬──────────────────┘
                ▼                                ▼
-        ┌────────────┐  ┌────────────┐   ┌────────────┐   (sinks in τ, optional)
+        ┌────────────┐  ┌────────────┐   ┌────────────┐  (sinks in xmTelemetry, optional)
         │  OtelSink  │  │ LttngSink  │   │  McapSink  │
         │ →OTLP/Coll.│  │ (optional) │   │ →flight rec│
         └────────────┘  └────────────┘   └────────────┘
 ```
 
-Dependency directions (must hold): `app → τ → Σ`; `app → ROS`; **never** `Σ → τ`, **never** `Σ/τ → ROS`. The RT hot path calls only the surface (in Σ) and never touches a sink.
+Dependency directions (must hold): `app → xmTelemetry → xmBase`; `app → ROS`; **never** `xmBase → xmTelemetry`, **never** `xmBase/xmTelemetry → ROS`. The RT hot path calls only the surface (in xmBase) and never touches a sink.
 
 ## 5. The surface (public API sketch)
 
-Illustrative C++17, namespace `xmotion::tm`. Signatures are indicative, not final.
+Illustrative C++17, namespace `xmotion::telemetry`. Signatures are indicative, not final.
 
 ### 5.1 Spine — time and identity
 
 ```cpp
-namespace xmotion::tm {
+namespace xmotion::telemetry {
 
 using Clock     = std::chrono::steady_clock;   // monotonic; the one time base
 using Timestamp = Clock::time_point;
@@ -103,7 +102,7 @@ void SetResource(std::string_view key, std::string_view value);
 ### 5.2 The four verbs
 
 ```cpp
-namespace xmotion::tm {
+namespace xmotion::telemetry {
 
 // ---- 1. EVENT — discrete structured record ----------------------------------
 enum class Severity { kTrace, kDebug, kInfo, kWarn, kError };
@@ -125,7 +124,7 @@ class Scope {
   explicit Scope(std::string_view name) noexcept;  // begin
   ~Scope();                                         // end (records duration)
 };
-#define XM_SCOPE(name) ::xmotion::tm::Scope XM_UNIQUE(name)
+#define XM_SCOPE(name) ::xmotion::telemetry::Scope XM_UNIQUE(name)
 
 // ---- 4. SIGNAL — high-rate typed sample → recording plane -------------------
 template <typename T>
@@ -160,10 +159,10 @@ The hot path never formats, serializes, allocates, blocks, or calls a sink. It w
 
 ## 7. Sinks and routing
 
-A `Sink` is the drain-side interface; sinks live in τ and are registered at startup. The router (in Σ) dispatches by record class.
+A `Sink` is the drain-side interface; sinks live in xmTelemetry and are registered at startup. The router (in xmBase) dispatches by record class.
 
 ```cpp
-namespace xmotion::tm {
+namespace xmotion::telemetry {
 class Sink {
  public:
   virtual ~Sink() = default;
@@ -175,12 +174,12 @@ void RegisterSink(std::unique_ptr<Sink>);       // at startup, before RT begins
 ```
 
 - **Routing**: *aggregatable diagnostics* (`event`/`metric`/`health`, and `scope` spans) → the OTel sink; *raw high-rate signals* (`signal`) → the MCAP sink. The router — not the call site — enforces this, so a 1 kHz raw stream never enters the metrics pipeline (report §6.2).
-- **Sinks (in τ, each behind a CMake option):**
+- **Sinks (in xmTelemetry, each behind a CMake option):**
   - `OtelSink` — maps records to OpenTelemetry metrics/logs/spans, exports via OTLP (to a local OTel Collector sidecar).
   - `McapSink` — writes `signal` records + a rolling **flight recorder** buffer to MCAP; snapshot-to-disk on a trigger (fault/e-stop/anomaly). Neutral encoding so files open in Foxglove and the ROS ecosystem.
   - `LttngSink` (optional) — forwards to LTTng UST tracepoints for kernel-correlated, RT-grade tracing.
-  - `NullSink` / `ConsoleSink` — built into Σ for zero-config and debug.
-- **Compile-time selection**: disabled instrumentation compiles to nothing; a build links only the sink libraries it enables. Default build (Σ only) = surface + Null/Console sink, no external deps.
+  - `NullSink` / `ConsoleSink` — built into xmBase for zero-config and debug.
+- **Compile-time selection**: disabled instrumentation compiles to nothing; a build links only the sink libraries it enables. Default build (xmBase only) = surface + Null/Console sink, no external deps.
 
 ## 8. ROS-free / interoperability (per report §10.5)
 
@@ -193,8 +192,8 @@ The library depends on none of rclcpp/rmw/DDS/rosbag2/ros2_tracing/ament. Intero
 ## 9. Build, dependencies, and module layout
 
 ```
-components/sigma/               (Σ — always built, light)
-  include/xmsigma/telemetry/
+components/sigma/               (xmBase — always built, light)
+  include/xmbase/telemetry/
     telemetry.hpp   # the 4 verbs — the ONE header app code includes
     time.hpp        # Clock, Timestamp, Now
     context.hpp     # TraceId/SpanId/Context, current-context hooks
@@ -205,10 +204,10 @@ components/sigma/               (Σ — always built, light)
   src/telemetry/    # drain thread, router, NullSink/ConsoleSink
   test/telemetry/   # unit + RT-safety (ASan/TSan) + micro-benchmarks
 
-components/tau/                 (τ — new component, optional sinks/collectors)
-  otel_sink/    # -> OpenTelemetry SDK / OTLP     (option XMTAU_WITH_OTEL)
-  mcap_sink/    # -> MCAP writer + flight recorder (option XMTAU_WITH_MCAP)
-  lttng_sink/   # -> LTTng UST                     (option XMTAU_WITH_LTTNG)
+components/telemetry/           (xmTelemetry — new component, optional sinks/collectors)
+  otel_sink/    # -> OpenTelemetry SDK / OTLP     (option XMTELEMETRY_WITH_OTEL)
+  mcap_sink/    # -> MCAP writer + flight recorder (option XMTELEMETRY_WITH_MCAP)
+  lttng_sink/   # -> LTTng UST                     (option XMTELEMETRY_WITH_LTTNG)
   collectors/   # host CPU/PSI/GPU/thermal -> metrics
   test/
 
@@ -216,19 +215,19 @@ components/tau/                 (τ — new component, optional sinks/collectors
   ros_bridge/   # ROS time, header-id ingress, rosbag2/ros2_tracing export
 ```
 
-Dependencies: Σ telemetry adds **zero** external deps (std only). τ sinks each pull their engine only when enabled. CMake options gate every heavy dependency; the default umbrella build stays light.
+Dependencies: the xmBase telemetry surface adds **zero** external deps (std only). xmTelemetry sinks each pull their engine only when enabled. CMake options gate every heavy dependency; the default umbrella build stays light.
 
 ## 10. Phased implementation plan
 
 Each phase is independently useful, buildable, and testable. Ship in order.
 
-- **P0 — Surface + spine + boundary (Σ), Null/Console sink.** The 4 verbs, `Now`, context, health, the POD record, the ring + drain + router, and a Console/Null sink. Zero external deps. Outcome: code can be instrumented everywhere; output is console/no-op. *This is the MVP and the highest-leverage step.*
+- **P0 — Surface + spine + boundary (xmBase), Null/Console sink.** The 4 verbs, `Now`, context, health, the POD record, the ring + drain + router, and a Console/Null sink. Zero external deps. Outcome: code can be instrumented everywhere; output is console/no-op. *This is the MVP and the highest-leverage step.*
 - **P1 — Wait-free ring hardening + benchmarks.** Adopt/validate the ring; ASan/TSan clean; a benchmark asserting the hot path is allocation-free and bounded (hooked allocator + p99 latency). Drop-policy tests.
-- **P2 — McapSink + flight recorder (τ).** `signal` → MCAP; rolling buffer + snapshot-on-trigger. Verify files open in Foxglove.
-- **P3 — OtelSink + Collector (τ).** diagnostics → OTLP → local OTel Collector → Grafana. Host-metrics semantic conventions.
-- **P4 — Host collectors (τ).** PSI, per-core CPU, memory, thermal, GPU (NVML/tegrastats) → metrics.
+- **P2 — McapSink + flight recorder (xmTelemetry).** `signal` → MCAP; rolling buffer + snapshot-on-trigger. Verify files open in Foxglove.
+- **P3 — OtelSink + Collector (xmTelemetry).** diagnostics → OTLP → local OTel Collector → Grafana. Host-metrics semantic conventions.
+- **P4 — Host collectors (xmTelemetry).** PSI, per-core CPU, memory, thermal, GPU (NVML/tegrastats) → metrics.
 - **P5 — LttngSink (optional) + app-side ROS bridge.** RT-grade tracing; ROS correlation.
-- **Cross-cutting — μ adoption.** Migrate μ drivers to emit their existing signals (`FreshnessMonitor` age, tx-queue depth, fault counters, `DeviceHealth`) through the surface. Low effort, high value — μ already produces the data.
+- **Cross-cutting — xmDriver adoption.** Migrate xmDriver's device drivers to emit their existing signals (`FreshnessMonitor` age, tx-queue depth, fault counters, `DeviceHealth`) through the surface. Low effort, high value — xmDriver already produces the data.
 
 ## 11. Testing and verification
 
@@ -242,10 +241,9 @@ Each phase is independently useful, buildable, and testable. Ship in order.
 
 - **Ring choice**: adopt an existing SPSC/MPSC ring vs. front everything with LTTng UST from the start. *Decision deferred to P1; the surface hides it.*
 - **MCAP encoding schema**: neutral (protobuf/flatbuffers/custom) for ROS-free interop vs. optional ros2msg channels via the app bridge.
-- **Naming**: `xmTau`/`xmotion::tm` are proposals.
 - **Attribute cardinality**: enforce a discipline (bounded attribute keys) so the OTel path stays healthy (report §6.2).
-- **Σ/τ boundary precision**: the drain lives in Σ but dispatches to τ-provided sinks; confirm the registration lifetime (sinks registered before RT begins, unregistered after RT ends).
+- **xmBase/xmTelemetry boundary precision**: the drain lives in xmBase but dispatches to xmTelemetry-provided sinks; confirm the registration lifetime (sinks registered before RT begins, unregistered after RT ends).
 
 ## 13. Summary
 
-We build a small **axle**: a ROS-free, RT-safe, OTel-shaped instrumentation surface plus a spine and a wait-free capture boundary in Σ, with adopted engines (MCAP, OpenTelemetry, LTTng) as optional compile-time-selected sinks in a new τ component. Call sites are uniform across control, planning, and decision; the heavy machinery is isolated and optional; ROS is an application-layer consumer, never a dependency. Start at P0 (surface + spine + Null sink, zero deps) and add sinks incrementally.
+We build a small **axle**: a ROS-free, RT-safe, OTel-shaped instrumentation surface plus a spine and a wait-free capture boundary in xmBase, with adopted engines (MCAP, OpenTelemetry, LTTng) as optional compile-time-selected sinks in the new xmTelemetry component. Call sites are uniform across control, planning, and decision; the heavy machinery is isolated and optional; ROS is an application-layer consumer, never a dependency. Start at P0 (surface + spine + Null sink, zero deps) and add sinks incrementally.

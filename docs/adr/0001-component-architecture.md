@@ -4,6 +4,11 @@
 - **Date:** 2026-06-27
 - **Deciders:** Ruixiang Du
 - **Supersedes:** —
+- **Superseded in part by:** [ADR 0003](0003-naming-and-branding.md) — the Greek
+  component *names* introduced here (xmSigma/xmMu/xmNabla/xmGamma/xmKappa/xmZeta)
+  are replaced by functional names (xmBase/xmDriver/xmNavigation/xmViewer/xmBoard/
+  xmFirmware), with the Greek letters retained as logos. The component
+  *architecture* and dependency model in this ADR are unchanged.
 - **Note:** §3 (packaging) was revised from a single-monorepo decision to a
   **polyrepo + umbrella** decision on 2026-06-27; see the revision note in §3.
 

@@ -1,6 +1,6 @@
 # Lessons
 
-Cross-cutting lessons for the xMotion polyrepo + umbrella. One entry per recurring mistake; keep concrete.
+Cross-cutting lessons for the XMotion polyrepo + umbrella. One entry per recurring mistake; keep concrete.
 
 ### `git submodule update` resets manual submodule checkouts
 - **Pattern:** In a coordinated multi-repo change I pointed a bundled/umbrella submodule at an *unmerged* feature commit with `git -C <sub> checkout <sha>`, then ran `git submodule update --init --recursive` at the parent to fetch nested deps. `git submodule update` reset the submodule back to the **recorded** pin (the old commit), silently undoing the checkout — so the next commit/build used the wrong submodule. Hit twice in one session: once validating the umbrella assembly, once bumping xmMu's bundled xmSigma (which committed a wrong pin and needed an `--amend` + force-push).
