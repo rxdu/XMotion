@@ -18,7 +18,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 # -- Options ----------------------------------------------------------------
 # xmBase (foundation) is always built. The rest are opt-in so a consumer only
 # pays for the dependency footprint it actually needs.
-option(XMOTION_WITH_MU    "Build xmMu (host hardware drivers)"   ON)
+option(XMOTION_WITH_DRIVER    "Build xmDriver (host hardware drivers)"   ON)
 option(XMOTION_WITH_NABLA "Build xmNabla (motion algorithms)"    ON)
 option(XMOTION_WITH_GAMMA "Build xmGamma (visualization)"        OFF)
 option(BUILD_TESTING      "Build component tests"                OFF)
@@ -37,8 +37,8 @@ endfunction()
 # -- Assemble (dependency order: foundation first) --------------------------
 xmotion_add_component(xmBase components/sigma)
 
-if(XMOTION_WITH_MU)
-  xmotion_add_component(xmMu components/mu)
+if(XMOTION_WITH_DRIVER)
+  xmotion_add_component(xmDriver components/mu)
 endif()
 
 if(XMOTION_WITH_NABLA)
@@ -50,5 +50,5 @@ if(XMOTION_WITH_GAMMA)
 endif()
 
 message(STATUS "xMotion ${PROJECT_VERSION}: configured "
-               "(MU=${XMOTION_WITH_MU} NABLA=${XMOTION_WITH_NABLA} "
+               "(DRIVER=${XMOTION_WITH_DRIVER} NABLA=${XMOTION_WITH_NABLA} "
                "GAMMA=${XMOTION_WITH_GAMMA})")
