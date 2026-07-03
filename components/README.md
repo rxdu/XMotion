@@ -7,7 +7,7 @@ Component names follow [ADR 0003](../docs/adr/0003-naming-and-branding.md); the 
 | Path | Submodule repo | Component |
 |------|----------------|-----------|
 | `sigma/` | `rxdu/xmBase` | xmBase (Σ) — foundation |
-| `mu/`    | `rxdu/xmmu`    | xmDriver (μ) — host hardware drivers |
+| `mu/`    | `rxdu/xmDriver`    | xmDriver (μ) — host hardware drivers |
 | `nabla/` | `rxdu/xmnabla` | xmNavigation (∇) — motion algorithms |
 | `gamma/` | `rxdu/quickviz`| xmViewer (γ) — visualization |
 
