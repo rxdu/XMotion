@@ -4,9 +4,8 @@ name: Assembly
 # builds them together — the cross-component integration each component's own
 # CI cannot catch on its own. The assembled set is the components whose
 # renames/migrations are mutually consistent (ADR 0003 lockstep):
-#   - xmBase + xmDriver build; xmTelemetry is cloned (pin/wiring validated)
-#     but stays TELEMETRY=OFF until the pinned xmBase carries the telemetry
-#     API it builds against (xmBase PR #18).
+#   - xmBase + xmTelemetry + xmDriver build together (the telemetry wave:
+#     xmBase v0.3.0, the SDK, and the instrumented drivers).
 #   - xmNavigation returns when its HAL migration lands (it still includes
 #     pre-redesign xmDriver headers, e.g. xmdriver/hal/*_interface.hpp).
 
@@ -21,7 +20,7 @@ env:
 
 jobs:
   assemble:
-    name: Assemble (base + driver)
+    name: Assemble (base + telemetry + driver)
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -57,12 +56,12 @@ jobs:
       - name: Install dependencies (union of component deps)
         run: |
           sudo apt-get update && sudo apt-get install -y \
-            libeigen3-dev libspdlog-dev libasio-dev libmodbus-dev libevent-dev \
+            libeigen3-dev libasio-dev libmodbus-dev libevent-dev \
             libevdev-dev libgl1-mesa-dev libglfw3-dev libcairo2-dev libtbb-dev \
             libboost-all-dev libgsl-dev libopencv-dev libyaml-cpp-dev \
             libncurses-dev libpcl-dev libglm-dev
 
-      - name: Configure assembly (base + driver)
+      - name: Configure assembly (base + telemetry + driver)
         run: >
           cmake -S . -B build -DCMAKE_BUILD_TYPE=$BUILD_TYPE
           -DXMOTION_WITH_NAVIGATION=OFF -DENABLE_VISUALIZATION=OFF
