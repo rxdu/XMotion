@@ -29,7 +29,7 @@ Dependency rule: components (xmDriver, xmNavigation, …) instrument against the
 
 ### 2. Default binding without the SDK
 
-A binary linking only xmBase gets honest console logging through a built-in, dependency-free binding; `metric`/`scope`/`signal` are safe no-ops. Rationale: a pure no-op default (OTel-faithful) would silently swallow errors — unacceptable on a robot; lib-only builds are never silent about faults, and pay nothing else.
+A binary linking only xmBase gets honest console logging through a built-in, dependency-free binding; `metric`/`span`/`signal` are safe no-ops. Rationale: a pure no-op default (OTel-faithful) would silently swallow errors — unacceptable on a robot; lib-only builds are never silent about faults, and pay nothing else.
 
 ### 3. Binding seam: install-once handle table
 

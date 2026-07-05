@@ -28,7 +28,7 @@ The stack mirrors OpenTelemetry's API/SDK/exporter split, adapted for robotics:
 
 | Tier | Home | What it is | Linked |
 |------|------|------------|--------|
-| **API** | **xmBase** `include/xmbase/telemetry/` | the 4 verbs (`event`/`metric`/`scope`/`signal`) + health, context spine, pre-registered handles, the binding seam, and a dependency-free console binding | always |
+| **API** | **xmBase** `include/xmbase/telemetry/` | the 4 verbs (`event`/`metric`/`span`/`signal`) + health, context spine, pre-registered handles, the binding seam, and a dependency-free console binding | always |
 | **SDK** | **xmTelemetry** (private) | the runtime machinery: RT-safe capture, crash-surviving flight recording, recording plane, insight tooling | optional |
 | **Exporters / tools** | xmTelemetry | MCAP recordings for Foxglove/PlotJuggler, Perfetto and OTLP trace exports, post-mortem triage tooling, CI regression gates | opt-in |
 
