@@ -4,8 +4,8 @@ name: Assembly
 # builds them together — the cross-component integration each component's own
 # CI cannot catch on its own. The assembled set is the components whose
 # renames/migrations are mutually consistent (ADR 0003 lockstep):
-#   - xmBase + xmTelemetry + xmDriver build together (the telemetry wave:
-#     xmBase v0.3.0, the SDK, and the instrumented drivers).
+#   - xmBase + xmDriver are assembled here. xmTelemetry integration is
+#     covered by its own repository's CI.
 #   - xmNavigation returns when its HAL migration lands (it still includes
 #     pre-redesign xmDriver headers, e.g. xmdriver/hal/*_interface.hpp).
 
@@ -20,7 +20,7 @@ env:
 
 jobs:
   assemble:
-    name: Assemble (base + telemetry + driver)
+    name: Assemble (base + driver)
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -30,28 +30,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
-      # components/telemetry is a PRIVATE repo: its clone authenticates over
-      # SSH with a read-only deploy key. The insteadOf rewrite is scoped to
-      # exactly that URL — deploy keys authorize a single repo, and the
-      # public siblings stay on anonymous https.
-      - name: Set up deploy key for the private telemetry submodule
-        env:
-          XMTELEMETRY_KEY: ${{ secrets.XMTELEMETRY_DEPLOYMENT_KEY }}
-        run: |
-          mkdir -p ~/.ssh
-          printf '%s\n' "$XMTELEMETRY_KEY" > ~/.ssh/id_xmtelemetry
-          chmod 600 ~/.ssh/id_xmtelemetry
-          ssh-keyscan github.com >> ~/.ssh/known_hosts 2>/dev/null
-          git config --global core.sshCommand "ssh -i ~/.ssh/id_xmtelemetry -o IdentitiesOnly=yes"
-          git config --global url."git@github.com:rxdu/xmTelemetry.git".insteadOf "https://github.com/rxdu/xmTelemetry.git"
-
-      # Init exactly the components this job assembles (viewer and navigation
-      # are not built here — see the header comment).
+      # Init exactly the components this job assembles (see the header
+      # comment). The superbuild skips absent components.
       - name: Init component submodules (built set)
         run: |
           git submodule sync --recursive
           git submodule update --init --recursive \
-            components/base components/driver components/telemetry
+            components/base components/driver
 
       - name: Install dependencies (union of component deps)
         run: |
@@ -61,10 +46,13 @@ jobs:
             libboost-all-dev libgsl-dev libopencv-dev libyaml-cpp-dev \
             libncurses-dev libpcl-dev libglm-dev
 
-      - name: Configure assembly (base + telemetry + driver)
+      - name: Configure assembly (base + driver)
         run: >
           cmake -S . -B build -DCMAKE_BUILD_TYPE=$BUILD_TYPE
           -DXMOTION_WITH_NAVIGATION=OFF -DENABLE_VISUALIZATION=OFF
+
+      - name: Check the assembled component set
+        run: test ! -f components/telemetry/CMakeLists.txt
 
       - name: Build
         run: cmake --build build -j
