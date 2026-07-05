@@ -2,7 +2,7 @@
 
 - Status: Shipped (API tier in xmBase; SDK + tools in xmTelemetry)
 - Governing decision: [ADR 0004 — telemetry layering](../adr/0004-telemetry-layering.md)
-- User-facing documentation: the [xmBase telemetry docs](https://github.com/rxdu/xmBase/tree/main/docs/telemetry) (design · reference · guide · examples) — the API is the surface users interact with, and its docs live with it.
+- User-facing documentation: the [xmBase telemetry docs](https://github.com/rxdu/xmBase/tree/main/docs/telemetry) (guide · reference · examples) — the API is the surface users interact with, and its docs live with it. The module design documents live with the SDK.
 
 ## 1. Purpose
 
@@ -34,7 +34,7 @@ The stack mirrors OpenTelemetry's API/SDK/exporter split, adapted for robotics:
 
 Dependency rule: components (xmDriver, xmNavigation, …) instrument against the **API only**; only the application links the SDK. xmBase never depends on xmTelemetry.
 
-**xmBase alone is a complete experience**: full-severity console logging through the built-in dependency-free binding, safe no-op handles for everything else, and a public, ABI-gated binding seam (`binding.hpp`) that any backend can implement. The API-tier design — the seam contract, the cost model, the RT-safe subset — is documented in [xmBase `docs/telemetry/design.md`](https://github.com/rxdu/xmBase/blob/main/docs/telemetry/design.md).
+**xmBase alone is a complete experience**: full-severity console logging through the built-in dependency-free binding, safe no-op handles for everything else, and a public, ABI-gated binding seam (`binding.hpp`) that any backend can implement. The API surface is documented in [xmBase `docs/telemetry/`](https://github.com/rxdu/xmBase/tree/main/docs/telemetry) (guide + reference + runnable examples).
 
 ## 4. The xmTelemetry SDK
 
