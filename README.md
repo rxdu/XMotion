@@ -3,6 +3,7 @@
 <img src="branding/icons/xmboard.svg" width="60" alt="xmBoard">
 <img src="branding/icons/xmfirmware.svg" width="60" alt="xmFirmware">&nbsp;
 <img src="branding/icons/xmbase.svg" width="60" alt="xmBase">&nbsp;
+<img src="branding/icons/xmtelemetry.svg" width="60" alt="xmTelemetry">&nbsp;
 <img src="branding/icons/xmdriver.svg" width="60" alt="xmDriver">&nbsp;
 <img src="branding/icons/xmnavigation.svg" width="60" alt="xmNavigation">&nbsp;
 <img src="branding/icons/xmviewer.svg" width="60" alt="xmViewer">&nbsp;
@@ -24,11 +25,12 @@ This repository is the **umbrella**: a thin CMake superbuild that assembles the 
 | **κ** | xmBoard | PCB / electronics (KiCAD) | [rxdu/xmBoard](https://github.com/rxdu/xmBoard) |
 | **ζ** | xmFirmware | MCU firmware (Zephyr) | [rxdu/xmFirmware](https://github.com/rxdu/xmFirmware) |
 | **Σ** | xmBase | foundation — logging · ipc · math · common types | [rxdu/xmBase](https://github.com/rxdu/xmBase) |
+| **τ** | xmTelemetry | observability — logs · metrics · traces · black box | [rxdu/xmTelemetry](https://github.com/rxdu/xmTelemetry) |
 | **μ** | xmDriver | host hardware drivers — motor · CAN · serial · modbus · sbus · imu | [rxdu/xmDriver](https://github.com/rxdu/xmDriver) |
 | **∇** | xmNavigation | motion algorithms — planning · control · estimation · mapping&nbsp;·&nbsp;*centerpiece* | [rxdu/xmNavigation](https://github.com/rxdu/xmNavigation) |
 | **γ** | xmViewer | visualization | [rxdu/quickviz](https://github.com/rxdu/quickviz) |
 
-Component names follow [ADR 0003](docs/adr/0003-naming-and-branding.md); the Greek letters (κ ζ Σ μ ∇ γ) are retained as logos only — every repo, submodule path, and icon file now carries its functional name. Everything builds on **xmBase**; dependencies point downward only. Two pairs span the boundary: **xmBase/xmDriver** on the host, **xmFirmware/xmBoard** on the embedded target — with **xmNavigation** the motion-algorithms core.
+Component names follow [ADR 0003](docs/adr/0003-naming-and-branding.md); the Greek letters (κ ζ Σ τ μ ∇ γ) are retained as logos only — every repo, submodule path, and icon file now carries its functional name. Everything builds on **xmBase**; dependencies point downward only. Two pairs span the boundary: **xmBase/xmDriver** on the host, **xmFirmware/xmBoard** on the embedded target — with **xmNavigation** the motion-algorithms core.
 
 ## Applications
 

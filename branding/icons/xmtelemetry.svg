@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img" aria-label="xmTelemetry — black box: flight-recorder ring around a live pulse (observability)">
+  <title>xmTelemetry — black box: flight-recorder ring around a live pulse (observability)</title>
+  <rect x="6" y="6" width="116" height="116" rx="30" fill="#161B26" stroke="#E0487B" stroke-opacity="0.4" stroke-width="2"/>
+  <g stroke="#E0487B" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M 84.5 84.5 A 29 29 0 1 1 84.5 43.5" stroke-width="3.5"/>
+  <path d="M42 64 H52 L58 49 L66 79 L72 64 H86" stroke-width="3.2"/></g>
+  <circle cx="84.5" cy="43.5" r="4.6" fill="#E0487B"/>
+</svg>
