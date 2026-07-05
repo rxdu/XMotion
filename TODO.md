@@ -11,7 +11,13 @@ The task tracker for the family. Cross-repo sequencing lives here; each componen
 - [x] xmTelemetry: v0.1.0 released (private assets; requires xmBase >= 0.3.0)
 - [ ] xmDriver: packaging fix — bundled xmBase install rules leak into the deb (needs EXCLUDE_FROM_ALL like xmTelemetry)
 - [x] xmBase: replace the interim spdlog binding with the permanent dependency-free console binding (shipped in v0.3.0 — spdlog left the foundation)
-- [ ] xmNavigation: HAL migration + telemetry-instrumented refactor (includes ADR 0002 Phase-2 decoupling: drop bundled `third_party/xmMu`/`xmSigma` copies, depend on the renamed components)
+- [~] xmNavigation: algorithm-centric refactor (ADR 0005) — plan approved, baseline v0.1.0 cut
+  - [~] W0: rename branch lands (PR #37, red-by-design until W2)
+  - [~] W1: extraction + decoupling (delete hardware layer + third_party/xmDriver; xmBase → v0.3.0; XLOG→XM; spdlog verdict) ∥ xmDriver adopts actuator groups
+  - [ ] W2: composition/ROS patterns documented; driver-free gate green
+  - [ ] W3: warning gate + advisory sanitizers + packaging (libxmotion-navigation)
+  - [ ] W4: telemetry instrumentation (planning/estimation/dispatcher)
+  - [ ] W5: umbrella re-pin; NAVIGATION=ON; full assembly returns
 - [ ] Umbrella: re-pin xmNavigation; flip `XMOTION_WITH_NAVIGATION=ON` — full assembly returns
 - [x] Rename component repos + umbrella submodule paths to function words; register xmTelemetry submodule (PR #12)
 
