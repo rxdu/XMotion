@@ -6,13 +6,14 @@ A cohesive icon set for the XMotion family. Each icon shares one visual language
 
 - **Badge** — a dark rounded-square (`#161B26`, `rx=30` on a 128×128 grid) with a thin accent-colored rim. Common shape + shared line style = family cohesion.
 - **Hero** — functional line-art of what the component *does* (an IMU, a flow field, a surface plot, a UART decode, a PCB…), drawn in the accent color with consistent stroke weight and rounded joins. `xmNavigation`, the centerpiece, keeps a brighter rim.
-- **Brand watermark** — the component's Greek symbol sits faintly behind the art (~10% opacity; `xmBoard`'s is enlarged and boosted so the κ reads through its busier routing), retaining the naming identity without competing with the function cue.
+- **Avatar cut** — a companion set in `icons/avatar/`: the same badge and accent, with the component's Greek glyph (full-strength outline path) as the entire artwork. Heroes are the identity at README scale (84 px+); the avatar cut is for the 16–40 px world — GitHub avatars, favicons, tabs — where hero line-art turns to texture. The hero icons themselves carry no watermark (removed 2026-07-05); the glyphs live on in the names, the logos, and this avatar set.
 
 ## The set
 
 <table>
   <tr>
     <td align="center"><img src="icons/xmbase.svg" width="84" alt="xmBase"></td>
+    <td align="center"><img src="icons/xmtelemetry.svg" width="84" alt="xmTelemetry"></td>
     <td align="center"><img src="icons/xmdriver.svg" width="84" alt="xmDriver"></td>
     <td align="center"><img src="icons/xmnavigation.svg" width="84" alt="xmNavigation"></td>
     <td align="center"><img src="icons/xmviewer.svg" width="84" alt="xmViewer"></td>
@@ -21,6 +22,7 @@ A cohesive icon set for the XMotion family. Each icon shares one visual language
   </tr>
   <tr>
     <td align="center"><b>xmBase</b><br>Σ</td>
+    <td align="center"><b>xmTelemetry</b><br>τ</td>
     <td align="center"><b>xmDriver</b><br>μ</td>
     <td align="center"><b>xmNavigation</b><br>∇</td>
     <td align="center"><b>xmViewer</b><br>γ</td>
@@ -32,11 +34,12 @@ A cohesive icon set for the XMotion family. Each icon shares one visual language
 | Icon | Accent | Symbol | Icon depicts |
 |------|--------|--------|--------------|
 | **xmBase** | `#5E6AD2` indigo | Σ | a hub of connected nodes — the runtime/event/IPC substrate everything plugs into |
+| **xmTelemetry** | `#E0487B` rose | τ | a flight-recorder ring, open at the write head, around a live pulse — observability |
 | **xmDriver** | `#F2A23A` amber | μ | a 3-axis IMU frame with a gyro ring — host hardware drivers |
 | **xmNavigation** | `#10B6C6` teal | ∇ | a flow field of vectors converging to a goal (forms the ∇) — motion algorithms (centerpiece) |
 | **xmViewer** | `#C158DC` violet | γ | a 3D gamma-distribution surface plot — visualization |
 | **xmFirmware** | `#46B358` green | ζ | a UART decode — logic-analyzer waveform + the decoded byte `0x5A` — firmware (Zephyr) |
-| **xmBoard** | `#E5604D` coral | κ | a PCB fan-out — IC footprint, pins, traces and vias — electronics (KiCAD) |
+| **xmBoard** | `#E5604D` coral | κ | a PCB fan-out — IC footprint, disciplined 45° traces and a via — electronics (KiCAD) |
 
 ## Usage notes
 
