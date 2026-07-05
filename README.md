@@ -46,7 +46,7 @@ Each submodule is pinned to an exact commit, so `clone → configure → build` 
 
 ## Documentation
 
-[Architecture & naming](docs/adr/0001-component-architecture.md) · [Transition plan](docs/adr/0002-repo-transition-plan.md) · [Brand & icons](branding/README.md)
+[Decision records](docs/adr/) · [Telemetry design](docs/design/telemetry-library-design.md) · [Brand & icons](branding/README.md) · [Tasks](TODO.md)
 
 ## License
 

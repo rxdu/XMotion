@@ -254,17 +254,9 @@ components/telemetry/           (xmTelemetry — optional; SDK core + exporters)
 
 Dependencies: the xmBase API adds **zero** external deps (std only) and no compiled machinery beyond the stderr fallback. The xmTelemetry SDK core is std-only. Exporters each pull their engine only when enabled. The default umbrella build stays light.
 
-## 10. Phased implementation plan
+## 10. Implementation status
 
-Each phase is independently useful, buildable, and testable. Ship in order.
-
-- **P0 — API (xmBase) + SDK skeleton (xmTelemetry).** The 4 verbs, handles, context, clock, compile-out floor, stderr default binding; SDK with `Init`/`Shutdown`, handle table, **heap channel migrated from `MpscRtLogger`**, drain, router, Null/Console sinks. Outcome: any component can be instrumented; console output when the SDK is linked, stderr warnings otherwise. *MVP; the ring is already proven, so P0 risk is integration, not concurrency.*
-- **P1 — Hardening + logging unification.** ASan/TSan/benchmarks (hot path provably alloc-free + bounded; drop-policy and flood-isolation tests). Re-point `XLOG_*`/`XLOG_RT_*` onto `event()` once the console path reaches parity; retire the duplicate ring/drain in `xmbase/logging`.
-- **P2 — Black box.** The mmap channel + versioned header + `xmtelemetry-recover` → MCAP. Crash-kill tests: `SIGKILL` mid-load, recover, verify the tail.
-- **P3 — McapSink + flight recorder.** Live `signal` → MCAP; rolling buffer + snapshot-on-trigger. Verify files open in Foxglove.
-- **P4 — OtelSink + Collector + host collectors.** Diagnostics → OTLP → per-host OTel Collector → Grafana; PSI/CPU/thermal/GPU collectors; semantic conventions.
-- **P5 — LTTng channel + app-side ROS bridge.** Kernel-correlated tracing; ROS correlation.
-- **Cross-cutting — xmDriver adoption.** Migrate xmDriver's drivers to emit their existing signals (`FreshnessMonitor` age, tx-queue depth, fault counters, `DeviceHealth`) through the API. Low effort, high value — the data already exists, and xmDriver gains no new dependency (API only).
+The design above is implemented and production-tested: the API tier lives in xmBase (`include/xmbase/telemetry/`, XLOG unified onto `event()`), and xmTelemetry carries the SDK (heap + mmap black-box channels on the migrated Vyukov ring), the recording plane (MCAP with rotation/retention/fault tolerance and trigger snapshots), and the insight tools (`xmtelemetry-tail`/`-recover`/`-diff`/`-report`, Perfetto and OTLP-JSON exports). The executable acceptance spec is the scenario suite in [xmTelemetry `docs/scenarios.md`](https://github.com/rxdu/xmTelemetry/blob/main/docs/scenarios.md) (S1–S12 live; S13 deferred). Remaining work — component adoption, re-pins, the deferred live-OTLP plane — is tracked in the umbrella [`TODO.md`](../../TODO.md), not here; each component's internal tasks live in its own `TODO.md`.
 
 ## 11. Testing and verification
 
@@ -277,13 +269,13 @@ Each phase is independently useful, buildable, and testable. Ship in order.
 
 ## 12. Risks and open questions
 
-- **Black-box format stability**: the mmap header/record schema needs versioning discipline from day one (recover tool must reject or adapt to old layouts). Schema-hash field reserved for this.
-- **Signal channels and typed payloads**: `SignalChannel<T>` requires a POD-schema registration story (name + field layout) so MCAP output is self-describing; decide protobuf/flatbuffers/custom-schema encoding at P3.
-- **Attribute cardinality**: enforce a discipline (bounded attribute keys) so the OTel path stays healthy (report §6.2).
-- **ConsoleSink backend**: start on spdlog (familiar), possibly drop to a bare formatter later so the SDK core is dependency-free in the strictest sense.
+- **Signal channels and typed payloads**: `SignalChannel<T>` still lacks a POD-schema registration story (name + field layout) — MCAP currently records signal payloads as size + base64, not self-describing. Decide an encoding when a consumer needs field-level decoding.
+- **Attribute cardinality**: enforce a discipline (bounded attribute keys) so the OTel path stays healthy (report §6.2) — becomes load-bearing with the deferred live-OTLP plane (S13).
 - **Host daemon**: a per-host telemetry agent (shm protocol) was considered and deferred (ADR 0004); revisit if per-process export duplication becomes a measured cost.
-- ~~Ring choice~~ — **closed** (ADR 0004): adopt the family's proven Vyukov ring from `MpscRtLogger`.
+- ~~Ring choice~~ — **closed** (ADR 0004): adopted the family's proven Vyukov ring from `MpscRtLogger`.
+- ~~Black-box format stability~~ — **closed**: the genesis header is ABI-gated (`kBindingAbiVersion`); the recover tool and live followers reject mismatched layouts.
+- ~~ConsoleSink backend~~ — **closed**: the SDK console sink is a dependency-free formatter; spdlog remains only in xmBase's interim binding, retired with the component migrations (see `TODO.md`).
 
 ## 13. Summary
 
-We build a small **axle** in three tiers that mirror OpenTelemetry's layering (ADR 0004): a stateless, ROS-free, RT-safe **API** in xmBase that every component can call unconditionally; an optional **SDK** in xmTelemetry holding all machinery — the proven wait-free ring (migrated from xmBase's RT logger) behind a channel abstraction whose mmap **black box** makes the flight recorder crash-consistent; and per-option **exporters** (MCAP, OTLP→Collector, LTTng) that adopt the heavy engines. Logging is not a separate system: `XLOG_*` becomes the `event()` verb of the same spine, so every log line, metric, span, and signal shares one clock and one correlation identity. Components instrument against the API alone; applications choose the machinery. Start at P0 (API + SDK skeleton) and add capabilities incrementally.
+We build a small **axle** in three tiers that mirror OpenTelemetry's layering (ADR 0004): a stateless, ROS-free, RT-safe **API** in xmBase that every component can call unconditionally; an optional **SDK** in xmTelemetry holding all machinery — the proven wait-free ring (migrated from xmBase's RT logger) behind a channel abstraction whose mmap **black box** makes the flight recorder crash-consistent; and per-option **exporters** (MCAP, OTLP→Collector, LTTng) that adopt the heavy engines. Logging is not a separate system: `XLOG_*` becomes the `event()` verb of the same spine, so every log line, metric, span, and signal shares one clock and one correlation identity. Components instrument against the API alone; applications choose the machinery.
