@@ -1,6 +1,6 @@
 # ADR 0002 — Repo Transition Plan (split, extract & wire)
 
-- **Status:** Proposed (needs sign-off on the open decisions before any destructive step)
+- **Status:** Accepted — Phase 1 executed (repos split/renamed with history, umbrella wired, submodules pinned; paths later renamed to function words per ADR 0003). Phase-2 decoupling is folded into the xmNavigation migration, tracked in [`TODO.md`](../../TODO.md).
 - **Date:** 2026-06-27
 - **Deciders:** Ruixiang Du
 - **Depends on:** [ADR 0001](0001-component-architecture.md)
