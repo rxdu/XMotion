@@ -1,7 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img" aria-label="xmViewer — γ — 3D gamma-distribution surface (visualization)">
-  <title>xmViewer — γ — 3D gamma-distribution surface (visualization)</title>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img" aria-label="xmViewer — 3D gamma-distribution surface (visualization)">
+  <title>xmViewer — 3D gamma-distribution surface (visualization)</title>
   <rect x="6" y="6" width="116" height="116" rx="30" fill="#161B26" stroke="#C158DC" stroke-opacity="0.4" stroke-width="2"/>
-  <path d="M84.822265625 58.828125Q76.017578125 67.9921875 69.099609375 76.2578125Q72.01953125 88.4765625 69.59375 91.666015625Q65.4609375 97.01171875 60.654296875 97.1015625Q54.05078125 97.236328125 51.759765625 92.609375Q49.333984375 87.66796875 54.904296875 78.59375L41.876953125 34.9296875H36.62109375V30.123046875H55.712890625L66.943359375 67.9921875Q75.298828125 55.009765625 77.275390625 45.80078125Q77.76953125 43.46484375 76.421875 38.8828125Q75.388671875 35.423828125 72.603515625 32.099609375V30.123046875H78.3984375Q87.5625 32.728515625 90.931640625 38.927734375Q95.603515625 47.552734375 84.822265625 58.828125Z" fill="#C158DC" opacity="0.100"/><clipPath id="gclip">
+  <g transform="translate(8.96 8.96) scale(0.86)"><clipPath id="gclip">
   <rect x="6" y="6" width="116" height="116" rx="30"/></clipPath>
   <g clip-path="url(#gclip)">
   <g transform="translate(0.0 22.3)">
@@ -32,4 +32,5 @@
   <path d="M101.0 62.9 L97.3 61.2 L93.6 58.8 L89.9 54.9 L86.2 48.3 L82.5 39.3 L78.8 30.4 L75.1 25.8 L71.4 27.4 L67.7 33.3 L64.0 39.3 L60.3 42.9 L56.6 43.8 "/>
   <path d="M104.7 61.4 L101.0 59.6 L97.3 56.8 L93.6 51.7 L89.9 42.9 L86.2 30.4 L82.5 18.2 L78.8 12.2 L75.1 15.2 L71.4 24.4 L67.7 33.9 L64.0 39.7 L60.3 41.8 "/>
   <path d="M108.4 59.9 L104.7 58.0 L101.0 55.1 L97.3 49.5 L93.6 39.7 L89.9 25.8 L86.2 12.2 L82.5 5.5 L78.8 9.2 L75.1 19.8 L71.4 30.7 L67.7 37.5 L64.0 40.1 "/></g></g></g>
+</g>
 </svg>
