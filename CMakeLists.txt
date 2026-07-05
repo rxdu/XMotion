@@ -18,9 +18,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 # -- Options ----------------------------------------------------------------
 # xmBase (foundation) is always built. The rest are opt-in so a consumer only
 # pays for the dependency footprint it actually needs.
-# xmTelemetry stays OFF until the pinned xmBase carries the telemetry API it
-# builds against (xmBase PR #18 / ABI v3) — flip ON at the next re-pin wave.
-option(XMOTION_WITH_TELEMETRY "Build xmTelemetry (observability SDK)"    OFF)
+option(XMOTION_WITH_TELEMETRY "Build xmTelemetry (observability SDK)"    ON)
 option(XMOTION_WITH_DRIVER    "Build xmDriver (host hardware drivers)"   ON)
 option(XMOTION_WITH_NAVIGATION "Build xmNavigation (motion algorithms)"    ON)
 option(XMOTION_WITH_VIEWER "Build xmViewer (visualization)"        OFF)
