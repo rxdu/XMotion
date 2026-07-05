@@ -22,10 +22,19 @@ jobs:
       matrix:
         os: [ ubuntu-22.04, ubuntu-24.04 ]
     steps:
-      - name: Checkout (recursive submodules)
+      - name: Checkout
         uses: actions/checkout@v5
-        with:
-          submodules: recursive
+
+      # Init exactly the components this job assembles. components/telemetry
+      # is a PRIVATE repo (anonymous clone 404s) and components/viewer is not
+      # built here (VIEWER=OFF) — a blanket `submodules: recursive` would
+      # clone both. Fold telemetry in once the repo is public or a PAT with
+      # access is wired into the checkout.
+      - name: Init component submodules (built set)
+        run: |
+          git submodule sync --recursive
+          git submodule update --init --recursive \
+            components/base components/driver components/navigation
 
       - name: Install dependencies (union of component deps)
         run: |
