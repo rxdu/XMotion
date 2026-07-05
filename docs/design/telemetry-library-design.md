@@ -224,7 +224,7 @@ The stack depends on none of rclcpp/rmw/DDS/rosbag2/ros2_tracing/ament. Interop 
 ## 9. Build, dependencies, and module layout
 
 ```
-components/sigma/               (xmBase — always built; API ONLY, stateless)
+components/base/                (xmBase — always built; API ONLY, stateless)
   include/xmbase/telemetry/
     telemetry.hpp   # the 4 verbs — the ONE header component code includes
     time.hpp        # Clock, Timestamp, Now

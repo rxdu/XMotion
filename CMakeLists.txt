@@ -18,6 +18,9 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 # -- Options ----------------------------------------------------------------
 # xmBase (foundation) is always built. The rest are opt-in so a consumer only
 # pays for the dependency footprint it actually needs.
+# xmTelemetry stays OFF until the pinned xmBase carries the telemetry API it
+# builds against (xmBase PR #18 / ABI v3) — flip ON at the next re-pin wave.
+option(XMOTION_WITH_TELEMETRY "Build xmTelemetry (observability SDK)"    OFF)
 option(XMOTION_WITH_DRIVER    "Build xmDriver (host hardware drivers)"   ON)
 option(XMOTION_WITH_NAVIGATION "Build xmNavigation (motion algorithms)"    ON)
 option(XMOTION_WITH_VIEWER "Build xmViewer (visualization)"        OFF)
@@ -35,20 +38,24 @@ function(xmotion_add_component name dir)
 endfunction()
 
 # -- Assemble (dependency order: foundation first) --------------------------
-xmotion_add_component(xmBase components/sigma)
+xmotion_add_component(xmBase components/base)
+
+if(XMOTION_WITH_TELEMETRY)
+  xmotion_add_component(xmTelemetry components/telemetry)
+endif()
 
 if(XMOTION_WITH_DRIVER)
-  xmotion_add_component(xmDriver components/mu)
+  xmotion_add_component(xmDriver components/driver)
 endif()
 
 if(XMOTION_WITH_NAVIGATION)
-  xmotion_add_component(xmNavigation components/nabla)
+  xmotion_add_component(xmNavigation components/navigation)
 endif()
 
 if(XMOTION_WITH_VIEWER)
-  xmotion_add_component(xmViewer components/gamma)
+  xmotion_add_component(xmViewer components/viewer)
 endif()
 
 message(STATUS "xMotion ${PROJECT_VERSION}: configured "
-               "(DRIVER=${XMOTION_WITH_DRIVER} NAVIGATION=${XMOTION_WITH_NAVIGATION} "
-               "VIEWER=${XMOTION_WITH_VIEWER})")
+               "(TELEMETRY=${XMOTION_WITH_TELEMETRY} DRIVER=${XMOTION_WITH_DRIVER} "
+               "NAVIGATION=${XMOTION_WITH_NAVIGATION} VIEWER=${XMOTION_WITH_VIEWER})")
