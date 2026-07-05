@@ -7,7 +7,9 @@ The task tracker for the family. Cross-repo sequencing lives here; each componen
 - [x] xmBase: merge PR [#18](https://github.com/rxdu/xmBase/pull/18) (telemetry docs package + examples + ABI v3)
 - [x] xmBase: cut v0.3.0 (telemetry API baseline — released 2026-07-05)
 - [x] xmDriver: migrate `XLOG_*` → `XM_*` telemetry API + adopt driver signals through the API (PRs #29 + #30)
-- [~] Umbrella: re-pin xmBase + xmDriver + telemetry; `XMOTION_WITH_TELEMETRY=ON` (PR #16, awaiting merge)
+- [x] Umbrella: re-pin xmBase + xmDriver + telemetry; `XMOTION_WITH_TELEMETRY=ON` (PR #16; assembly proof lives in the SDK repo CI)
+- [x] xmTelemetry: v0.1.0 released (private assets; requires xmBase >= 0.3.0)
+- [ ] xmDriver: packaging fix — bundled xmBase install rules leak into the deb (needs EXCLUDE_FROM_ALL like xmTelemetry)
 - [x] xmBase: replace the interim spdlog binding with the permanent dependency-free console binding (shipped in v0.3.0 — spdlog left the foundation)
 - [ ] xmNavigation: HAL migration + telemetry-instrumented refactor (includes ADR 0002 Phase-2 decoupling: drop bundled `third_party/xmMu`/`xmSigma` copies, depend on the renamed components)
 - [ ] Umbrella: re-pin xmNavigation; flip `XMOTION_WITH_NAVIGATION=ON` — full assembly returns
