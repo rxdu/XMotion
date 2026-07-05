@@ -12,19 +12,21 @@ The task tracker for the family. Cross-repo sequencing lives here; each componen
 - [ ] xmDriver: packaging fix — bundled xmBase install rules leak into the deb (needs EXCLUDE_FROM_ALL like xmTelemetry)
 - [x] xmBase: replace the interim spdlog binding with the permanent dependency-free console binding (shipped in v0.3.0 — spdlog left the foundation)
 - [~] xmNavigation: algorithm-centric refactor (ADR 0005) — plan approved, baseline v0.1.0 cut
-  - [~] W0: rename branch lands (PR #37, red-by-design until W2)
-  - [~] W1: extraction + decoupling (delete hardware layer + third_party/xmDriver; xmBase → v0.3.0; XLOG→XM; spdlog verdict) ∥ xmDriver adopts actuator groups
-  - [ ] W2: composition/ROS patterns documented; driver-free gate green
-  - [ ] W3: warning gate + advisory sanitizers + packaging (libxmotion-navigation)
-  - [ ] W4: telemetry instrumentation (planning/estimation/dispatcher)
-  - [ ] W5: umbrella re-pin; NAVIGATION=ON; full assembly returns
+  - [x] W0+W1: rename + extraction/decoupling merged as one wave (nav #38; hardware layer gone; xmBase → v0.3.0; XLOG→XM) ∥ xmDriver adopts actuator groups (driver #31 — still open)
+  - [x] W2: composition/ROS patterns documented; driver-free gate enforced in CI (nav #39)
+  - [x] W3: warning gate (~60 findings fixed incl. a latent OOB read) + sanitizers (now gating) + libxmotion-navigation packaging, GSL removed for std::random (nav #41, #45)
+  - [x] W3.5 reorganization: navigation-stack areas (estimation/mapping/decision/planning/control), dormant modules revived for new development, xmnavigation/ include namespace, quickviz → third_party, visualization extracted (viz-independent ABI), event+math promoted to xmBase #25 (nav #42, #43, #44)
+  - [ ] W4: telemetry instrumentation (planning/estimation/decision + revived modules)
+  - [ ] W5: umbrella re-pin (needs xmBase v0.4.0 cut); NAVIGATION=ON; full assembly returns
 - [ ] Umbrella: re-pin xmNavigation; flip `XMOTION_WITH_NAVIGATION=ON` — full assembly returns
 - [x] Rename component repos + umbrella submodule paths to function words; register xmTelemetry submodule (PR #12)
 
 ## Next arc (after the xmNavigation refactor)
 
 - [ ] xmMessaging (ADR 0006, Proposed): scenario suite first (wish-code), then backend evaluation spike (iceoryx2 intra-host; zenoh vs DDS inter-host), then the repo
-- [ ] evaluate: 2023 iceoryx prototype findings; adopt nav's common/ipc + ros2_idl remnants into the new component
+- [ ] evaluate: 2023 iceoryx prototype findings (nav's common/ipc + ros2_idl remnants already removed in W3; ADR 0006 candidate evaluation in PR #19)
+- [ ] xmNavigation: grow common/ into the inter-area stack vocabulary (state → map → decision → plan → control contracts), scenario-driven; controller_interface gets its first real consumers
+- [ ] xmNavigation: traffic_map / road-network revival — unblocks the prediction module and the excluded ghost apps/tests
 
 ## Deferred (revisit when the trigger condition arrives)
 
