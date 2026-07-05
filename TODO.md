@@ -21,6 +21,11 @@ The task tracker for the family. Cross-repo sequencing lives here; each componen
 - [ ] Umbrella: re-pin xmNavigation; flip `XMOTION_WITH_NAVIGATION=ON` — full assembly returns
 - [x] Rename component repos + umbrella submodule paths to function words; register xmTelemetry submodule (PR #12)
 
+## Next arc (after the xmNavigation refactor)
+
+- [ ] xmMessaging (ADR 0006, Proposed): scenario suite first (wish-code), then backend evaluation spike (iceoryx2 intra-host; zenoh vs DDS inter-host), then the repo
+- [ ] evaluate: 2023 iceoryx prototype findings; adopt nav's common/ipc + ros2_idl remnants into the new component
+
 ## Deferred (revisit when the trigger condition arrives)
 
 - [ ] xmTelemetry: live-export plane — when fleet deployment is real (offline exports already cover single-robot workflows)
