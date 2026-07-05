@@ -1,5 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img" aria-label="xmKappa — κ — PCB fan-out: IC footprint, traces and vias (electronics / KiCAD)">
-  <title>xmKappa — κ — PCB fan-out: IC footprint, traces and vias (electronics / KiCAD)</title>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img" aria-label="xmBoard — κ — PCB fan-out: IC footprint, traces and vias (electronics / KiCAD)">
+  <title>xmBoard — κ — PCB fan-out: IC footprint, traces and vias (electronics / KiCAD)</title>
   <rect x="6" y="6" width="116" height="116" rx="30" fill="#161B26" stroke="#E5604D" stroke-opacity="0.4" stroke-width="2"/>
   <path d="M60.6962890625 90.9375H27.623046875V84.6748046875H35.4384765625V42.1298828125H27.623046875V35.9189453125H60.6962890625V42.1298828125H53.7607421875V62.1083984375L75.96484375 42.181640625H69.3916015625V35.9189453125H94.494140625V42.181640625H84.2978515625L70.1162109375 54.9140625L93.3037109375 84.6748046875H99.255859375V90.9375H67.68359375V84.6748046875H74.1533203125L58.884765625 65.05859375L53.7607421875 69.61328125V84.6748046875H60.6962890625Z" fill="#E5604D" opacity="0.190"/>
   <g stroke="#E5604D" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.98">
