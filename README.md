@@ -1,11 +1,11 @@
 <div align="center">
 
-<img src="branding/icons/xmkappa.svg" width="60" alt="xmBoard">
-<img src="branding/icons/xmzeta.svg" width="60" alt="xmFirmware">&nbsp;
-<img src="branding/icons/xmsigma.svg" width="60" alt="xmBase">&nbsp;
-<img src="branding/icons/xmmu.svg" width="60" alt="xmDriver">&nbsp;
-<img src="branding/icons/xmnabla.svg" width="60" alt="xmNavigation">&nbsp;
-<img src="branding/icons/xmgamma.svg" width="60" alt="xmViewer">&nbsp;
+<img src="branding/icons/xmboard.svg" width="60" alt="xmBoard">
+<img src="branding/icons/xmfirmware.svg" width="60" alt="xmFirmware">&nbsp;
+<img src="branding/icons/xmbase.svg" width="60" alt="xmBase">&nbsp;
+<img src="branding/icons/xmdriver.svg" width="60" alt="xmDriver">&nbsp;
+<img src="branding/icons/xmnavigation.svg" width="60" alt="xmNavigation">&nbsp;
+<img src="branding/icons/xmviewer.svg" width="60" alt="xmViewer">&nbsp;
 
 # XMotion
 
@@ -28,7 +28,7 @@ This repository is the **umbrella**: a thin CMake superbuild that assembles the 
 | **∇** | xmNavigation | motion algorithms — planning · control · estimation · mapping&nbsp;·&nbsp;*centerpiece* | [rxdu/xmNavigation](https://github.com/rxdu/xmNavigation) |
 | **γ** | xmViewer | visualization | [rxdu/quickviz](https://github.com/rxdu/quickviz) |
 
-Component names follow [ADR 0003](docs/adr/0003-naming-and-branding.md); the Greek letters (κ ζ Σ μ ∇ γ) are retained as logos, and the repo links keep their current names until each is renamed. Everything builds on **xmBase**; dependencies point downward only. Two pairs span the boundary: **xmBase/xmDriver** on the host, **xmFirmware/xmBoard** on the embedded target — with **xmNavigation** the motion-algorithms core.
+Component names follow [ADR 0003](docs/adr/0003-naming-and-branding.md); the Greek letters (κ ζ Σ μ ∇ γ) are retained as logos only — every repo, submodule path, and icon file now carries its functional name. Everything builds on **xmBase**; dependencies point downward only. Two pairs span the boundary: **xmBase/xmDriver** on the host, **xmFirmware/xmBoard** on the embedded target — with **xmNavigation** the motion-algorithms core.
 
 ## Applications
 

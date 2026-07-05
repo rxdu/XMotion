@@ -12,12 +12,12 @@ A cohesive icon set for the XMotion family. Each icon shares one visual language
 
 <table>
   <tr>
-    <td align="center"><img src="icons/xmsigma.svg" width="84" alt="xmBase"></td>
-    <td align="center"><img src="icons/xmmu.svg" width="84" alt="xmDriver"></td>
-    <td align="center"><img src="icons/xmnabla.svg" width="84" alt="xmNavigation"></td>
-    <td align="center"><img src="icons/xmgamma.svg" width="84" alt="xmViewer"></td>
-    <td align="center"><img src="icons/xmzeta.svg" width="84" alt="xmFirmware"></td>
-    <td align="center"><img src="icons/xmkappa.svg" width="84" alt="xmBoard"></td>
+    <td align="center"><img src="icons/xmbase.svg" width="84" alt="xmBase"></td>
+    <td align="center"><img src="icons/xmdriver.svg" width="84" alt="xmDriver"></td>
+    <td align="center"><img src="icons/xmnavigation.svg" width="84" alt="xmNavigation"></td>
+    <td align="center"><img src="icons/xmviewer.svg" width="84" alt="xmViewer"></td>
+    <td align="center"><img src="icons/xmfirmware.svg" width="84" alt="xmFirmware"></td>
+    <td align="center"><img src="icons/xmboard.svg" width="84" alt="xmBoard"></td>
   </tr>
   <tr>
     <td align="center"><b>xmBase</b><br>Σ</td>
@@ -43,4 +43,4 @@ A cohesive icon set for the XMotion family. Each icon shares one visual language
 - Files are plain SVG at 128×128; scale freely. For favicons/app icons, export to PNG at 16/32/48/256.
 - **Font-independent:** every element — including the Greek watermarks and `xmFirmware`'s `0x5A` byte — is baked to vector outlines (no `<text>`, no font dependency), so the files render pixel-identically everywhere. The shapes derive from DejaVu Serif/Mono Bold, positioned to match the original text exactly.
 - Keep the dark badge; the accent color is the only thing that should change per component. A light-background variant can be added later if needed.
-- Icon **filenames** keep their Greek-letter identity (`xmsigma.svg`, `xmmu.svg`, …) because, per [ADR 0003](../docs/adr/0003-naming-and-branding.md), the Greek letters *are* the logos; the component **names** are functional (xmBase, xmDriver, …). A file rename to match the functional names is an optional future cleanup.
+- Icon **filenames** carry the functional names (`xmbase.svg`, `xmdriver.svg`, …), matching the component names per [ADR 0003](../docs/adr/0003-naming-and-branding.md); the Greek letters live on *inside* the artwork as the logos themselves.
