@@ -25,16 +25,31 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
-      # Init exactly the components this job assembles. components/telemetry
-      # is a PRIVATE repo (anonymous clone 404s) and components/viewer is not
-      # built here (VIEWER=OFF) — a blanket `submodules: recursive` would
-      # clone both. Fold telemetry in once the repo is public or a PAT with
-      # access is wired into the checkout.
+      # components/telemetry is a PRIVATE repo: its clone authenticates over
+      # SSH with a read-only deploy key. The insteadOf rewrite is scoped to
+      # exactly that URL — deploy keys authorize a single repo, and the
+      # public siblings stay on anonymous https.
+      - name: Set up deploy key for the private telemetry submodule
+        env:
+          XMTELEMETRY_KEY: ${{ secrets.XMTELEMETRY_DEPLOYMENT_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "$XMTELEMETRY_KEY" > ~/.ssh/id_xmtelemetry
+          chmod 600 ~/.ssh/id_xmtelemetry
+          ssh-keyscan github.com >> ~/.ssh/known_hosts 2>/dev/null
+          git config --global core.sshCommand "ssh -i ~/.ssh/id_xmtelemetry -o IdentitiesOnly=yes"
+          git config --global url."git@github.com:rxdu/xmTelemetry.git".insteadOf "https://github.com/rxdu/xmTelemetry.git"
+
+      # Init exactly the components this job assembles (components/viewer is
+      # not built here — VIEWER=OFF). Telemetry is cloned to validate the
+      # pin/wiring but stays TELEMETRY=OFF at configure until the pinned
+      # xmBase carries the telemetry API it builds against (xmBase PR #18).
       - name: Init component submodules (built set)
         run: |
           git submodule sync --recursive
           git submodule update --init --recursive \
-            components/base components/driver components/navigation
+            components/base components/driver components/navigation \
+            components/telemetry
 
       - name: Install dependencies (union of component deps)
         run: |
