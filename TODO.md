@@ -11,14 +11,16 @@ The task tracker for the family. Cross-repo sequencing lives here; each componen
 - [x] xmTelemetry: v0.1.0 released (private assets; requires xmBase >= 0.3.0)
 - [ ] xmDriver: packaging fix — bundled xmBase install rules leak into the deb (needs EXCLUDE_FROM_ALL like xmTelemetry)
 - [x] xmBase: replace the interim spdlog binding with the permanent dependency-free console binding (shipped in v0.3.0 — spdlog left the foundation)
-- [~] xmNavigation: algorithm-centric refactor (ADR 0005) — plan approved, baseline v0.1.0 cut
+- [x] xmNavigation: algorithm-centric refactor (ADR 0005) — v0.1.0 baseline → v0.2.0 released
   - [x] W0+W1: rename + extraction/decoupling merged as one wave (nav #38; hardware layer gone; xmBase → v0.3.0; XLOG→XM) ∥ xmDriver adopts actuator groups (driver #31 — still open)
   - [x] W2: composition/ROS patterns documented; driver-free gate enforced in CI (nav #39)
   - [x] W3: warning gate (~60 findings fixed incl. a latent OOB read) + sanitizers (now gating) + libxmotion-navigation packaging, GSL removed for std::random (nav #41, #45)
   - [x] W3.5 reorganization: navigation-stack areas (estimation/mapping/decision/planning/control), dormant modules revived for new development, xmnavigation/ include namespace, quickviz → third_party, visualization extracted (viz-independent ABI), event+math promoted to xmBase #25 (nav #42, #43, #44)
-  - [ ] W4: telemetry instrumentation (planning/estimation/decision + revived modules)
-  - [ ] W5: umbrella re-pin (needs xmBase v0.4.0 cut); NAVIGATION=ON; full assembly returns
-- [ ] Umbrella: re-pin xmNavigation; flip `XMOTION_WITH_NAVIGATION=ON` — full assembly returns
+  - [x] W4: telemetry instrumentation across all areas (nav #59)
+  - [x] W5: xmBase v0.4.0 released; umbrella re-pin + full assembly green (#22); **xmNavigation v0.2.0 released** — the algorithm-centric migration arc is COMPLETE
+- [x] Umbrella: re-pin xmNavigation; `XMOTION_WITH_NAVIGATION=ON` — full assembly green (#22)
+- [ ] Viz v2: migrate nav viz to the restructured quickviz (canvas/viewer/plot/scene; cvdraw retired upstream); interactive tuner; evaluate scene/ 3D for SRB + OccupancyGrid renderable (quickviz #30 stb-guard is a precondition)
+- [ ] MPPI M4: CUDA backend for dGPU/Jetson Orin (blocked: CUDA toolkit install + reboot on dev machine)
 - [x] Rename component repos + umbrella submodule paths to function words; register xmTelemetry submodule (PR #12)
 
 ## Next arc (after the xmNavigation refactor)
