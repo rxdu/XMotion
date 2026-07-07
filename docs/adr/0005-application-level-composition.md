@@ -22,6 +22,15 @@ Meanwhile the planning core (~48k LOC), the estimators, the control laws, and th
 
 This mirrors ADR 0004 one level up: there, components instrument against a stateless API and applications choose the machinery; here, components implement algorithms or hardware against the shared foundation, and applications choose the combination.
 
+### Dependency classes (clarification, 2026-07)
+
+The rule above constrains the **deployment closure** — what a robot links at runtime. Its rationale (consumers paying for stacks they don't use; behavior-critical layers entangling release cycles) applies to runtime dependencies only. Two classes are therefore distinguished:
+
+1. **Runtime dependencies**: the deployment closure of an algorithm or hardware component is **xmBase plus mathematical libraries, nothing else**. Unchanged, strict, CI-enforced.
+2. **Development-support dependencies**: components *may* depend on family components whose purpose is supporting development — visualization, simulation tooling, test infrastructure — provided the dependency is **always optional (build-gated) and provably absent from the deployment closure**. These support components exist so that domain components can see themselves during development; forbidding the dependency would invert their purpose.
+
+**xmViewer** (quickviz) is the first registered development-support component: xmNavigation consumes its rendering primitives in the visualization-gated modules and demos. The division of labor is deliberate: the *drawers of a component's types live with that component* (they evolve with the algorithms); the support component stays domain-agnostic (canvases, windows, GUI primitives). Deployment builds are verified render-free the same way they are verified hardware-free.
+
 ## Alternatives considered
 
 - **Keep the composition layer in xmNavigation** (status quo) — rejected: hardware dependencies in the algorithms component, coupled release cycles, and consumers paying for stacks they never use.
