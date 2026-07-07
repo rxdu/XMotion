@@ -66,6 +66,17 @@ The **foundation owns the root namespace**: xmBase's shared vocabulary lives unq
 
 Non-C++ components: **xmBoard** (KiCAD) has no code namespace; **xmFirmware** (Zephyr is C) uses a C identifier prefix `xm_…`.
 
+**Include prefix (header install directory).** The default is `xm` + function word, matching the component (`xmbase/`, `xmdriver/`). Because the include prefix is typed in every consumer file, a long function word may register a short form — the registry is authoritative, one short form per component, decided at component creation:
+
+| Component | Include prefix |
+|---|---|
+| xmBase | `xmbase/` |
+| xmDriver | `xmdriver/` |
+| xmNavigation | `xmnav/` |
+| xmMessaging (planned) | `xmmsg/` |
+
+Everything else keeps the full word: repository names, umbrella pin paths, C++ namespaces, CMake packages/targets, and package names never abbreviate.
+
 ### 5. Derivation test
 
 The scheme is consistent iff all three artifacts derive mechanically from one function word:
