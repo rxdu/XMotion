@@ -19,8 +19,8 @@ The task tracker for the family. Cross-repo sequencing lives here; each componen
   - [x] W4: telemetry instrumentation across all areas (nav #59)
   - [x] W5: xmBase v0.4.0 released; umbrella re-pin + full assembly green (#22); **xmNavigation v0.2.0 released** — the algorithm-centric migration arc is COMPLETE
 - [x] Umbrella: re-pin xmNavigation; `XMOTION_WITH_NAVIGATION=ON` — full assembly green (#22)
-- [ ] Viz v2: migrate nav viz to the restructured quickviz (canvas/viewer/plot/scene; cvdraw retired upstream); interactive tuner; evaluate scene/ 3D for SRB + OccupancyGrid renderable (quickviz #30 stb-guard is a precondition)
-- [ ] MPPI M4: CUDA backend for dGPU/Jetson Orin (blocked: CUDA toolkit install + reboot on dev machine)
+- [x] Viz v2 COMPLETE (nav #61): quickviz migration (cvdraw → image/) + interactive MPPI tuner (cairo alpha-fan world view, live ESS/cost plots, pause/step + λ/σ sliders); still open: quickviz #30 merge (merge-commit, NOT squash — nav pins 318daf4 from that branch), scene/ 3D for SRB + OccupancyGrid renderable
+- [~] MPPI M4: rollout-backend seam + threaded CPU backend done (nav #62: SRB 11.0→5.9 ms @4 workers, bitwise-deterministic); CUDA backend still blocked (toolkit install + reboot on dev machine); CPU follow-up: per-sample counter-seeded noise streams (sampling is the serial share, 4.4 ms @K=2048)
 - [x] Rename component repos + umbrella submodule paths to function words; register xmTelemetry submodule (PR #12)
 
 ## Next arc (after the xmNavigation refactor)
