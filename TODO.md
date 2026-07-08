@@ -20,7 +20,8 @@ The task tracker for the family. Cross-repo sequencing lives here; each componen
   - [x] W5: xmBase v0.4.0 released; umbrella re-pin + full assembly green (#22); **xmNavigation v0.2.0 released** — the algorithm-centric migration arc is COMPLETE
 - [x] Umbrella: re-pin xmNavigation; `XMOTION_WITH_NAVIGATION=ON` — full assembly green (#22)
 - [x] Viz v2 COMPLETE (nav #61): quickviz migration (cvdraw → image/) + interactive MPPI tuner (cairo alpha-fan world view, live ESS/cost plots, pause/step + λ/σ sliders); still open: quickviz #30 merge (merge-commit, NOT squash — nav pins 318daf4 from that branch), scene/ 3D for SRB + OccupancyGrid renderable
-- [~] MPPI M4: rollout-backend seam + threaded CPU backend done (nav #62: SRB 11.0→5.9 ms @4 workers, bitwise-deterministic); CUDA backend still blocked (toolkit install + reboot on dev machine); CPU follow-up: per-sample counter-seeded noise streams (sampling is the serial share, 4.4 ms @K=2048)
+- [x] MPPI M4a–c COMPLETE (nav #62/#63): rollout-backend seam + threaded CPU backend; CUDA backends (wheeled + SRB programs over shared raw-span cores, float32) + on-device Philox sampling — wheeled end-to-end 0.14 ms @K=2048 / 9.4 ms @K=131072 on GTX 1660 Ti; remaining M4d: device spline-knot sampling for SRB, Jetson Orin deployment/profiling, robot trial
+- [x] control folder pass (nav #64/#65/#66): fsm → vendored ctfsm v0.2.0 submodule; safety shield (envelope + ctfsm fallback ladder + CBF-QP barrier, scenario-driven S1–S6); model zoo consolidated into control/models (BicycleAccelModel + dep-free RK4, boost::odeint out of control/); follow-ups: PID production pass, boost removal from state_lattice + reachability internals, S5 quadruped GRF cone shield
 - [x] Rename component repos + umbrella submodule paths to function words; register xmTelemetry submodule (PR #12)
 
 ## Next arc (after the xmNavigation refactor)
