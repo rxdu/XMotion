@@ -54,6 +54,18 @@ if(XMOTION_WITH_VIEWER)
   xmotion_add_component(xmViewer components/viewer)
 endif()
 
+# Hardware bench programs (bench/): manual-run validation apps composing
+# driver + algorithms + viewer. Never run in CI (hardware presence cannot
+# be assumed); their recordings seed the golden-log replay datasets.
+option(XMOTION_BUILD_BENCH "Build hardware bench programs" OFF)
+if(XMOTION_BUILD_BENCH)
+  if(NOT (XMOTION_WITH_DRIVER AND XMOTION_WITH_NAVIGATION AND XMOTION_WITH_VIEWER))
+    message(FATAL_ERROR "XMOTION_BUILD_BENCH requires XMOTION_WITH_DRIVER, "
+                        "XMOTION_WITH_NAVIGATION and XMOTION_WITH_VIEWER")
+  endif()
+  add_subdirectory(bench)
+endif()
+
 message(STATUS "xMotion ${PROJECT_VERSION}: configured "
                "(TELEMETRY=${XMOTION_WITH_TELEMETRY} DRIVER=${XMOTION_WITH_DRIVER} "
                "NAVIGATION=${XMOTION_WITH_NAVIGATION} VIEWER=${XMOTION_WITH_VIEWER})")
