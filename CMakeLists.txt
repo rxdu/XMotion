@@ -22,6 +22,7 @@ option(XMOTION_WITH_TELEMETRY "Build xmTelemetry (observability SDK)"    ON)
 option(XMOTION_WITH_DRIVER    "Build xmDriver (host hardware drivers)"   ON)
 option(XMOTION_WITH_NAVIGATION "Build xmNavigation (motion algorithms)"    ON)
 option(XMOTION_WITH_VIEWER "Build xmViewer (visualization)"        OFF)
+option(XMOTION_WITH_MESSAGING "Build xmMessaging (communication layer)" OFF)
 option(BUILD_TESTING      "Build component tests"                OFF)
 
 # -- Helper: add a component submodule if it is present ---------------------
@@ -54,6 +55,12 @@ if(XMOTION_WITH_VIEWER)
   xmotion_add_component(xmViewer components/viewer)
 endif()
 
+# Default OFF while xmMessaging is pre-API (P0.0 scenario phase, ADR 0006).
+if(XMOTION_WITH_MESSAGING)
+  xmotion_add_component(xmMessaging components/messaging)
+endif()
+
 message(STATUS "xMotion ${PROJECT_VERSION}: configured "
                "(TELEMETRY=${XMOTION_WITH_TELEMETRY} DRIVER=${XMOTION_WITH_DRIVER} "
-               "NAVIGATION=${XMOTION_WITH_NAVIGATION} VIEWER=${XMOTION_WITH_VIEWER})")
+               "NAVIGATION=${XMOTION_WITH_NAVIGATION} VIEWER=${XMOTION_WITH_VIEWER} "
+               "MESSAGING=${XMOTION_WITH_MESSAGING})")
