@@ -55,9 +55,22 @@ if(XMOTION_WITH_VIEWER)
   xmotion_add_component(xmViewer components/viewer)
 endif()
 
-# Default OFF while xmMessaging is pre-API (P0.0 scenario phase, ADR 0006).
+# xmMessaging (ADR 0006): v0.1.0 — in-process + POSIX-shm reaches. Default
+# OFF until an umbrella consumer composes with it.
 if(XMOTION_WITH_MESSAGING)
   xmotion_add_component(xmMessaging components/messaging)
+endif()
+
+# Hardware bench programs (bench/): manual-run validation apps composing
+# driver + algorithms + viewer. Never run in CI (hardware presence cannot
+# be assumed); their recordings seed the golden-log replay datasets.
+option(XMOTION_BUILD_BENCH "Build hardware bench programs" OFF)
+if(XMOTION_BUILD_BENCH)
+  if(NOT (XMOTION_WITH_DRIVER AND XMOTION_WITH_NAVIGATION AND XMOTION_WITH_VIEWER))
+    message(FATAL_ERROR "XMOTION_BUILD_BENCH requires XMOTION_WITH_DRIVER, "
+                        "XMOTION_WITH_NAVIGATION and XMOTION_WITH_VIEWER")
+  endif()
+  add_subdirectory(bench)
 endif()
 
 message(STATUS "xMotion ${PROJECT_VERSION}: configured "
