@@ -19,6 +19,7 @@ A cohesive icon set for the XMotion family. Each icon shares one visual language
     <td align="center"><img src="icons/xmviewer.svg" width="84" alt="xmViewer"></td>
     <td align="center"><img src="icons/xmfirmware.svg" width="84" alt="xmFirmware"></td>
     <td align="center"><img src="icons/xmboard.svg" width="84" alt="xmBoard"></td>
+    <td align="center"><img src="icons/xmmessaging.svg" width="84" alt="xmMessaging"></td>
   </tr>
   <tr>
     <td align="center"><b>xmBase</b><br>Σ</td>
@@ -28,6 +29,7 @@ A cohesive icon set for the XMotion family. Each icon shares one visual language
     <td align="center"><b>xmViewer</b><br>γ</td>
     <td align="center"><b>xmFirmware</b><br>ζ</td>
     <td align="center"><b>xmBoard</b><br>κ</td>
+    <td align="center"><b>xmMessaging</b><br>π</td>
   </tr>
 </table>
 
@@ -39,7 +41,28 @@ A cohesive icon set for the XMotion family. Each icon shares one visual language
 | **xmNavigation** | `#10B6C6` teal | ∇ | a flow field of vectors converging to a goal (forms the ∇) — motion algorithms (centerpiece) |
 | **xmViewer** | `#C158DC` violet | γ | a 3D gamma-distribution surface plot — visualization |
 | **xmFirmware** | `#46B358` green | ζ | a UART decode — logic-analyzer waveform + the decoded byte `0x5A` — firmware (Zephyr) |
-| **xmBoard** | `#E5604D` coral | κ | a PCB fan-out — IC footprint, disciplined 45° traces and a via — electronics (KiCAD) |
+| **xmBoard** | `#E5604D` coral | κ | a PCB fan-out — a quad IC footprint, a structured 45° trace fan onto a via column, and short top/bottom escapes — electronics (KiCAD) |
+| **xmMessaging** | `#2E90FA` signal blue | π | a brokerless peer-to-peer mesh — nodes exchanging messages directly (the application communication layer) |
+
+## The family mark — xmMotion
+
+The umbrella has its own mark, deliberately unlike the components: where each component is an *abstract diagram*, the family mark is **figurative** — a tracked robot navigating (reading a map, driving forward with motion streaks trailing). That difference is intentional, so the parent never reads as a ninth component. Per [ADR 0003](../docs/adr/0003-naming-and-branding.md), the family is always written **XMotion** (never bare "XM"); the mark carries the identity graphically.
+
+<table>
+  <tr>
+    <td align="center"><img src="icons/xmmotion.svg" width="84" alt="xmMotion"></td>
+    <td align="center"><img src="icons/xmmotion-mark.svg" width="84" alt="xmMotion Ξ mark"></td>
+  </tr>
+  <tr>
+    <td align="center"><b>xmMotion</b><br>robot</td>
+    <td align="center"><b>xmMotion</b><br>Ξ</td>
+  </tr>
+</table>
+
+Two tiers, one system:
+
+- **`icons/xmmotion.svg`** — the full robot (white on the dark badge) for large contexts: README headers, org/repo avatars, anywhere ≥ ~48 px.
+- **`icons/xmmotion-mark.svg`** — the **Ξ** mark for small contexts (favicon, browser tab, 16–32 px), where the robot's detail would blur. It is the robot's own three motion streaks, extracted; Ξ ("xi", the *x* sound) doubles as the "X" of XMotion and, as three tapered streaks, as motion itself. PNGs: `icons/xmmotion.png`, `icons/xmmotion-mark.png`.
 
 ## Usage notes
 
