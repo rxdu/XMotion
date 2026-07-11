@@ -28,7 +28,7 @@ The task tracker for the family. Cross-repo sequencing lives here; each componen
 
 ## Next arc (after the xmNavigation refactor)
 
-- [ ] xmMessaging (ADR 0006, Proposed): scenario suite first (wish-code), then backend evaluation spike (iceoryx2 intra-host; zenoh vs DDS inter-host), then the repo
+- [~] xmMessaging (ADR 0006, Proposed): repo created (rxdu/xmMessaging, components/messaging, gated OFF); scenario suite P0.0 wish-code in progress (M1 drafted; design.md captures one-API/three-reaches + LatestMailbox contract); next: remaining wish-code, then P0a API headers
 - [ ] evaluate: 2023 iceoryx prototype findings (nav's common/ipc + ros2_idl remnants already removed in W3; ADR 0006 candidate evaluation in PR #19)
 - [ ] xmNavigation: grow common/ into the inter-area stack vocabulary (state → map → decision → plan → control contracts), scenario-driven; controller_interface gets its first real consumers
 - [ ] xmNavigation: traffic_map / road-network revival — unblocks the prediction module and the excluded ghost apps/tests

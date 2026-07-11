@@ -18,3 +18,7 @@
 	path = components/telemetry
 	url = https://github.com/rxdu/xmTelemetry.git
 	branch = main
+[submodule "components/messaging"]
+	path = components/messaging
+	url = https://github.com/rxdu/xmMessaging.git
+	branch = main
