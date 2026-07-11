@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img" aria-label="xmMotion — Ξ: the family motion-streak mark for small sizes (favicon)">
+  <title>xmMotion — Ξ motion-streak mark (small-size / favicon); the robot's motion trail, extracted</title>
+  <rect x="6" y="6" width="116" height="116" rx="30" fill="#161B26" stroke="#EAEFF7" stroke-opacity="0.5" stroke-width="2.4"/>
+  <g transform="translate(0 64) skewX(-9) translate(0 -64)"><path d="M36 47 L83.3 42.3 A4.7 4.7 0 0 1 83.3 51.7 Z M54 64 L79.3 59.3 A4.7 4.7 0 0 1 79.3 68.7 Z M36 81 L83.3 76.3 A4.7 4.7 0 0 1 83.3 85.7 Z" fill="#EAEFF7"/></g>
+</svg>
