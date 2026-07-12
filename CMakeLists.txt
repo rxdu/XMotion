@@ -15,6 +15,23 @@ project(xMotion VERSION 0.1.0 LANGUAGES CXX)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
+# -- Output layout ------------------------------------------------------------
+# The assembly follows the family bin/lib placement convention: every
+# executable lands in build/bin and every library in build/lib, regardless
+# of which component produced it. Guarded so a parent project embedding
+# this superbuild keeps its own layout. Components that already anchor
+# their outputs to CMAKE_BINARY_DIR (driver, navigation) align with this
+# automatically; the rest inherit it.
+if(NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY)
+  set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
+endif()
+if(NOT CMAKE_LIBRARY_OUTPUT_DIRECTORY)
+  set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
+endif()
+if(NOT CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
+  set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
+endif()
+
 # -- Options ----------------------------------------------------------------
 # xmBase (foundation) is always built. The rest are opt-in so a consumer only
 # pays for the dependency footprint it actually needs.
