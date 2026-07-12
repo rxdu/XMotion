@@ -17,16 +17,29 @@ Separately, quickviz's position was settled in the same discussions: it remains 
 
 ## Decision
 
-### 1. Foundation promotion criteria
+### 1. Charters and gates (amended 2026-07-12)
 
-A module moves into xmBase only when **all four** hold:
+Placement is governed by two separate instruments, because design and construction answer different questions. Consumers change and will change; the module map must not be a snapshot of today's include graph.
+
+**Module charters — forward-looking, define WHAT belongs where.** Each module has a role stated independently of current consumer counts:
+
+- **xmBase** — the family's shared language and discipline: time, vocabulary types (wire tier + geometry tier), the instrumentation seam, serialization, concurrency primitives, measurement methodology. Anything every component may assume exists.
+- **xmMessaging** — everything about moving data between composed components: wire contracts, QoS, type identity, backends, introspection of the transport.
+- **xmTelemetry** — the recording and analysis plane (one recorder for the family).
+- **xmDriver** — hardware access and transport-level device plumbing.
+- **xmNavigation** — motion algorithms and their domain vocabulary.
+- **quickviz/xmViewer** — visualization and the GUI programming model (§2).
+
+A charter answers "where will this live *eventually*" — and it vetoes wrong-home placements even when consumer counts would permit them (two components sharing GUI machinery still would not put it in xmBase).
+
+**Build gates — grounded, define WHEN code is built or moved.** Construction and promotion happen only when all four hold:
 
 1. **Two or more real consumers with the same contract.** Name-alikes do not count; the event-dispatcher pair is the cautionary example.
 2. **Contract-stable and verified.** The module arrives with its tests and benchmarks; verification transfers with the code.
 3. **No heavyweight dependencies.** The foundation earns its position by being cheap to link.
 4. **Domain-neutral.** Robot semantics stay in components (ADR 0005 doctrine).
 
-Everything else stays with its owning component until a second consumer *materializes* — never speculatively (anti-pattern 5).
+Until the gates pass, code **incubates in its consumer** — even when its charter home is obvious (`SkewSymmetric` incubates in nav estimation; if a second Eigen-helper consumer appears, a foundation math tier reopens *by charter*, not by ad-hoc debate). The charter fixes the destination; the gates fix the timing; nothing is built before something needs it.
 
 ### 2. The plane boundary (UI events vs transport)
 
