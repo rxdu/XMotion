@@ -7,25 +7,37 @@
 
 ## The milestone (measured, falsifiable)
 
-**Swervebot drives autonomous waypoint laps**: xmDriver actuation (DDSM drive + steering servos) + IMU/odometry MEKF state estimation + waypoint mission layer + tracking controller, composed over xmMessaging (in-process), black-box telemetry recording throughout, live diagnostics attached — **sustained 30 minutes**, with the observability chain proving control-loop tails on hardware are unaffected by full-rate observation.
+**Swervebot drives autonomous waypoint laps**, on a two-computer architecture with **CAN as the boundary**:
 
-The application repo is [swervebot_controller](https://github.com/rxdu/swervebot_controller) — a standalone application *on top of* the family (ADR 0005: applications compose; it is deliberately NOT an umbrella component and never gets pinned here).
+- **Base tier ("firmware role")** — the existing PocketBeagle running the reworked [swervebot_controller](https://github.com/rxdu/swervebot_controller): motor/servo control, swerve kinematics, RC failsafe, exposing a high-level command/state interface **over CAN bus**. To the upper layer, the base is a CAN device — like any commercial chassis.
+- **Autonomy tier** — an aarch64/x86 computer running the composition: swerve-base CAN driver (xmDriver) + IMU/odometry MEKF + waypoint mission + tracking controller over xmMessaging (in-process), black-box telemetry, live diagnostics — **sustained 30 minutes**, with the observability chain proving control-loop tails are unaffected by full-rate observation.
 
-## Phase 0 — platform + application skeleton (the two decisions everything waits on)
+Both applications compose the family (ADR 0005) and are deliberately NOT umbrella components — never pinned here.
 
-- [ ] **Compute platform decision (blocking, hardware)**: the current PocketBeagle is 32-bit ARM (Cortex-A8); `xmbase/concurrency`'s seqlock primitives require lock-free 64-bit atomics (`static_assert`ed) and family CI covers x86_64 + aarch64 only. Options: move to an aarch64 SBC (Pi 4/5, Radxa, Jetson — recommended; zero family work), or fund an armv7 port (mutex-fallback primitives + a new CI leg — real cost, one consumer). Decide before any bring-up work.
-- [ ] **Swervebot rework — skeleton**: new composition-based application per the family pattern (`docs/` integration-patterns: construction from config, capability-typed actuator groups, app-owned loops); consumes family releases via find_package/debs (or submodules pinned at tags — app's choice, not the umbrella's). Old `external/libxmotion` retired. Port `sbot.yaml` config + FSM/control-mode structure. Gate for phase exit: **teleop parity on the bench** — joystick → SwerveDriveKinematics → DDSM/steering, using xmDriver only.
+**armv7 support is scoped to the driver tier only** (owner decision): the base runs xmDriver + xmBase core on 32-bit ARM; the seqlock/messaging/nav stack is not required there. (Correction of an earlier claim: Cortex-A8 is ARMv7-A, which has `ldrexd`/`strexd` — 64-bit lock-free atomics likely exist; the accurate status is *unverified*, and the narrow scoping keeps the verification burden proportional.)
+
+## Phase 0 — the CAN contract + two skeletons
+
+- [ ] **Base CAN protocol spec (the new wire vocabulary)**: command set (body twist in, mode/enable, e-stop), state set (odometry twist/pose delta, module states, faults, battery), heartbeat + **command-timeout failsafe defined ON the base** (loss of CAN = safe stop, non-negotiable), versioned like the family's wire contracts. Lives in the swervebot repo (it owns the interface); the upper-layer driver consumes it.
+- [ ] **Swervebot rework — base firmware skeleton**: composition-based app per the family pattern, scoped to the base role (config from `sbot.yaml`, FSM/control modes, RC override, kinematics → DDSM/steering, CAN server). Consumes xmDriver + xmBase core via the app's own pinning. Old `external/libxmotion` retired. Exit gate: **teleop parity on the bench through the new stack**.
+- [ ] **armv7 driver-tier build proof**: cross-compile (or on-target build) of xmDriver + xmBase core for armhf; a cross-compile CI check if it proves cheap (GitHub has no armhf runners — build-only). Owner: xmDriver/xmBase.
+- [ ] **Upper-compute choice**: which aarch64/x86 machine rides the robot (and whether Phase 1–2 can run it tethered/desk-side first). Owner: you.
+
+## Phase 0.5 — the upper layer sees the base
+
+- [ ] **swerve_base CAN device driver in xmDriver** (upper side): speaks the Phase-0 protocol via socketcan (exists), exposes the base as capability-typed HAL (twist-commandable, odometry-reporting, health) like any other device. This replaces the earlier "steering-servo driver" gap — steering stays base-internal behind CAN.
+- Measured exit: upper computer commands laps of the *bench-mounted* base over CAN; command→wheel latency and heartbeat-failsafe behavior measured and recorded.
 
 ## Phase 1 — hardware-in-the-loop teleop (retire the biggest unknown first)
 
-- [ ] Driver bring-up on the robot: DDSM_210 (exists, consolidated + checksum fixes), RC/sbus receiver (exists), joystick HID (exists); **WaveShare steering-servo driver — likely gap, audit against xmDriver's device set** (owner: xmDriver).
-- [ ] Safety envelope before autonomy: failsafe stop path, command clamps, FSM guard states, RC override — validated on stands before wheels touch ground (owner: app + xmDriver HAL capabilities).
-- [ ] Telemetry instrumented from day one: app binds the SDK, black-box recording on, `xm_logging`/spans in the control loop (owner: app; everything needed already shipped).
-- Measured exit: teleop drive session recorded end-to-end; control-loop period tails published from the MCAP.
+- [ ] Base bring-up on the robot: DDSM_210 (exists), WaveShare steering servos (**likely xmDriver gap — audit the device set**; base-side), RC/sbus (exists) — all on the PocketBeagle build.
+- [ ] Safety envelope before autonomy, layered: base-level (CAN-timeout failsafe, command clamps, RC override — validated on stands) and upper-level (FSM guards). 
+- [ ] Telemetry: the autonomy tier binds the SDK with black-box recording from day one; the base stays lean (console/log tier initially — whether the base ever records MCAP is a later, gated question).
+- Measured exit: teleop through the FULL chain (joystick on upper computer → CAN → base → wheels) recorded end-to-end; control-loop period tails published from the MCAP.
 
 ## Phase 2 — state estimation on the robot
 
-- [ ] Swerve wheel-odometry model (kinematics exists; odometry integration + covariance is the gap — owner: xmNavigation estimation).
+- [ ] Swerve wheel-odometry: decide the split — base computes odom (reports over CAN, part of the protocol) vs raw module states up + upper-side model. Then the model/covariance work lands where decided (owner: protocol decision first).
 - [ ] IMU on robot: imu_hipnuc driver exists; hardware IMU bench exists (`bench/imu_attitude`) — run the attitude bench on the actual unit (owner: umbrella bench).
 - [ ] MEKF fusion (IMU + odom) on-target; **validation ladder L0–L5 executed against recorded robot data** (the ladder was proposed for exactly this; owner: xmNavigation).
 - [ ] Localization honesty check: odom+IMU dead-reckoning drifts — decide whether waypoint laps need an absolute reference (UWB/LiDAR/camera) or whether drift-bounded laps satisfy the milestone. **Scoping decision, owner: you.**
@@ -50,7 +62,7 @@ The application repo is [swervebot_controller](https://github.com/rxdu/swervebot
 - [ ] quickviz: I3 overflow counters · I7 bench CI gate · I5 hardware-GL observer A/B (one command on a desktop session) · `thread_safe_queue` move-fix audit · `namespace xmotion` residue cleanup
 - [ ] xmMessaging: bench `reference.json` pinning (needs a designated stable runner) · ASan CI job (ran manually at W2)
 - [ ] xmBase: clang-format pass on W1 files where formatter exists
-- [ ] Family: arm64 deb builds if the platform decision lands on aarch64 deploy-by-deb
+- [ ] Family: arm64 deb builds for the autonomy tier; armhf cross-compile check for the driver tier
 
 ## Deferred by the gate (not blocked — ungated)
 
