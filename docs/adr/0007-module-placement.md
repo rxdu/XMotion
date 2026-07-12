@@ -36,11 +36,15 @@ Everything else stays with its owning component until a second consumer *materia
 
 | Component | Keeps | Gains | Sheds |
 |---|---|---|---|
-| **xmBase** | types, clock, telemetry API, serialization, math | `concurrency/` — `LatestSlot`, `BoundedQueue`, `Waiter`, `Placement` promoted from xmMessaging with their full verification suite; `testing/` — the allocation probe + percentile bench harness, unified from the three copies | Σ-era `container/ring_buffer` + `thread_safe_queue` (superseded by `concurrency/`); `event/` — retired **together with** `container/thread_safe_queue` (its only consumer is xmBase's own async dispatcher), unless the audit surfaces a named consumer, in which case the dispatcher repatriates to that component |
+| **xmBase** | types, clock, telemetry API, serialization | `concurrency/` — `LatestSlot`, `BoundedQueue`, `Waiter`, `Placement` promoted from xmMessaging with their full verification suite; `testing/` — the allocation probe + percentile bench harness, unified from the three copies | Σ-era `container/ring_buffer` + `thread_safe_queue` (superseded by `concurrency/`); `event/` — retired **together with** `container/thread_safe_queue` (its only consumer is xmBase's own async dispatcher), unless the audit surfaces a named consumer, in which case the dispatcher repatriates to that component |
 | **xmMessaging** | envelope/wire contract, schema hash, mail record, shm segment, backends, Domain wiring | — | `detail/{latest_slot, bounded_queue, waiter, placement}` become thin includes of `xmbase/concurrency/` |
 | **quickviz** | everything: the GUI event system (core capability per §2), its contract-conformant buffers, zero family dependencies in core | `bridges/xmotion/` — dual-mode gated module (in-tree targets > installed packages > absent-and-skipped): topic-bound widgets, telemetry signal taps, GUI domain browser over the introspection reader, metric-schema dashboard, and recording *controls* driving xmTelemetry's recorder (never a second logger — one recording plane) | nothing structural |
 | **xmTelemetry** | its RT-specialized rings (mlock'd, crash-safe — deliberately not general) | adopts `xmbase/testing/` | its private harness copy |
 | **xmDriver** | — | — | `async_port` include swap to `xmbase/concurrency/` |
+
+**The Eigen boundary inside xmBase** (audit result, 2026-07-12): `math/` dissolves — it held one function (`SkewSymmetric`) with one consumer component, so it repatriates to nav estimation (criterion 1 applied to an existing resident; xmNavigation#76 / xmBase#27). Eigen remains in the foundation *only* for the `types/` geometry tier (`geometry.hpp` Pose/Twist/Wrench/Quaterniond, `quantities.hpp` tagged units), which has genuine multi-component consumers (driver IMU, nav) — the original header design already separates it from the Eigen-free wire tier (`scalar.hpp`, `vector.hpp`). At W1, this becomes a formal target split: **`xmotion::xmbase`** (Eigen-free default: types wire tier, telemetry, serialization, concurrency, testing) and **`xmotion::xmbase-geometry`** (Eigen tier, links xmbase). Link map: telemetry → xmbase; messaging → xmbase (sheds Eigen from its builds and quickstart); driver → xmbase + geometry; nav → both; quickviz core → nothing. One repo, one release, one deb.
+
+**What xmBase must never contain**: a runtime/executor/lifecycle tier (ADR 0005), transport or wire semantics (xmMessaging's), GUI-plane machinery (§2), config-file frameworks, robot semantics, or optional heavyweight dependencies behind flags. The default answer to "should this go in xmBase?" is no, overturned only by the four criteria.
 
 **Deliberately not promoted** (criterion 1 fails today — single consumer each): the schema hash (xmMessaging; revisit if serialization wants type identity), the introspection reader, telemetry's rings, quickviz's `DataStream`/`BufferRegistry`.
 
@@ -66,5 +70,5 @@ quickviz builds in two modes from one repo: **standalone** (no family packages p
 ## Open questions
 
 1. The `xmbase/event/` audit: confirm no unnamed consumer exists (it was promoted from navigation on 2026-07-06 yet nothing includes it — establish why before deleting).
-2. Whether xmBase should split an Eigen-free core target — deferred until a consumer that needs it materializes (criterion 1).
+2. ~~Whether xmBase should split an Eigen-free core target~~ — **resolved**: the consumer materialized (xmMessaging links xmBase needing zero Eigen; every messaging CI job installs libeigen3-dev for a clock and 24 context bytes). Split lands at W1 as `xmbase` / `xmbase-geometry` per the Eigen-boundary section above.
 3. `xmbase/testing/` packaging: header-only install vs a dev-only component in the deb — decide at W1.
