@@ -77,6 +77,8 @@ Non-C++ components: **xmBoard** (KiCAD) has no code namespace; **xmFirmware** (Z
 
 Everything else keeps the full word: repository names, umbrella pin paths, C++ namespaces, CMake packages/targets, and package names never abbreviate.
 
+**Applications (the `xmApp` tier).** Applications built on the family are named `xmApp` + function word (`xmAppCamera`, `xmAppSwerveBase`). They compose *released* family components and are never pinned into the umbrella (ADR 0005). The function word names what the application is — preferring the robot *type* and tier over a robot *instance* (instances are named by configuration files, not repositories): `xmAppSwerveBase` drives any swerve base; `sbot.yaml` names the robot.
+
 ### 5. Derivation test
 
 The scheme is consistent iff all three artifacts derive mechanically from one function word:
