@@ -9,7 +9,7 @@
 
 **Swervebot drives autonomous waypoint laps**, on a two-computer architecture with **CAN as the boundary**:
 
-- **Base tier ("firmware role")** — the existing PocketBeagle running the reworked [swervebot_controller](https://github.com/rxdu/swervebot_controller): motor/servo control, swerve kinematics, RC failsafe, exposing a high-level command/state interface **over CAN bus**. To the upper layer, the base is a CAN device — like any commercial chassis.
+- **Base tier ("firmware role")** — the existing PocketBeagle running the reworked [xmAppSwerveBase](https://github.com/rxdu/xmAppSwerveBase): motor/servo control, swerve kinematics, RC failsafe, exposing a high-level command/state interface **over CAN bus**. To the upper layer, the base is a CAN device — like any commercial chassis.
 - **Autonomy tier** — an aarch64/x86 computer running the composition: swerve-base CAN driver (xmDriver) + IMU/odometry MEKF + waypoint mission + tracking controller over xmMessaging (in-process), black-box telemetry, live diagnostics — **sustained 30 minutes**, with the observability chain proving control-loop tails are unaffected by full-rate observation.
 
 Both applications compose the family (ADR 0005) and are deliberately NOT umbrella components — never pinned here.
