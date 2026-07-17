@@ -9,23 +9,26 @@
 
 **Swervebot drives autonomous waypoint laps**, on a two-computer architecture with **CAN as the boundary**:
 
-- **Base tier ("firmware role")** — the existing PocketBeagle running the reworked [xmAppSwerveBase](https://github.com/rxdu/xmAppSwerveBase): motor/servo control, swerve kinematics, RC failsafe, exposing a high-level command/state interface **over CAN bus**. To the upper layer, the base is a CAN device — like any commercial chassis.
-- **Autonomy tier** — an aarch64/x86 computer running the composition: swerve-base CAN driver (xmDriver) + IMU/odometry MEKF + waypoint mission + tracking controller over xmMessaging (in-process), black-box telemetry, live diagnostics — **sustained 30 minutes**, with the observability chain proving control-loop tails are unaffected by full-rate observation.
+The whole robot lives in one application repo, [xmAppSwerveBot](https://github.com/rxdu/xmAppSwerveBot), split at the CAN boundary into two independently-deployable tiers plus their shared contract:
 
-Both applications compose the family (ADR 0005) and are deliberately NOT umbrella components — never pinned here.
+- **`protocol/`** — the CAN wire vocabulary as a shared library (`swerve_protocol`), linked by both tiers so they can never disagree on the interface.
+- **Base tier (`base/`, "firmware role")** — the PocketBeagle running the base firmware: motor/servo control, swerve kinematics, RC failsafe, exposing a high-level command/state interface **over CAN**. To the upper tier, the base is a CAN device — like any commercial chassis.
+- **Autonomy tier (`autonomy/`)** — an aarch64/x86 computer running the composition: the swerve-base CAN **client** (`autonomy/can_client/`, speaking `protocol/`) + IMU/odometry MEKF + waypoint mission + tracking controller over xmMessaging (in-process), black-box telemetry, live diagnostics — **sustained 30 minutes**, with the observability chain proving control-loop tails are unaffected by full-rate observation.
+
+The repo composes the family (ADR 0005) and is deliberately NOT an umbrella component — never pinned here.
 
 **armv7 support is scoped to the driver tier only** (owner decision): the base runs xmDriver + xmBase core on 32-bit ARM; the seqlock/messaging/nav stack is not required there. (Correction of an earlier claim: Cortex-A8 is ARMv7-A, which has `ldrexd`/`strexd` — 64-bit lock-free atomics likely exist; the accurate status is *unverified*, and the narrow scoping keeps the verification burden proportional.)
 
 ## Phase 0 — the CAN contract + two skeletons
 
-- [ ] **Base CAN protocol spec (the new wire vocabulary)**: command set (body twist in, mode/enable, e-stop), state set (odometry twist/pose delta, module states, faults, battery), heartbeat + **command-timeout failsafe defined ON the base** (loss of CAN = safe stop, non-negotiable), versioned like the family's wire contracts. Lives in the swervebot repo (it owns the interface); the upper-layer driver consumes it.
-- [ ] **Swervebot rework — base firmware skeleton**: composition-based app per the family pattern, scoped to the base role (config from `sbot.yaml`, FSM/control modes, RC override, kinematics → DDSM/steering, CAN server). Consumes xmDriver + xmBase core via the app's own pinning. Old `external/libxmotion` retired. Exit gate: **teleop parity on the bench through the new stack**.
+- [x] **Base CAN protocol spec (the shared wire vocabulary)**: command/state/heartbeat frames + **command-timeout failsafe defined ON the base** — `docs/can_protocol.md` v1, realized as the `protocol/` shared library (both tiers link it; the repo owns the interface).
+- [x] **Base firmware skeleton** (`base/`): composition-based app per the family pattern (config → FSM on ctfsm → kinematics → actuators → CAN server), waveshare bus-array actuator adapter, `app_hw_check` bench tool. Old `external/libxmotion` retired. **Remaining exit gate: teleop parity on the bench** (needs hardware).
 - [ ] **armv7 driver-tier build proof**: cross-compile (or on-target build) of xmDriver + xmBase core for armhf; a cross-compile CI check if it proves cheap (GitHub has no armhf runners — build-only). Owner: xmDriver/xmBase.
 - [ ] **Upper-compute choice**: which aarch64/x86 machine rides the robot (and whether Phase 1–2 can run it tethered/desk-side first). Owner: you.
 
 ## Phase 0.5 — the upper layer sees the base
 
-- [ ] **swerve_base CAN device driver in xmDriver** (upper side): speaks the Phase-0 protocol via socketcan (exists), exposes the base as capability-typed HAL (twist-commandable, odometry-reporting, health) like any other device. This replaces the earlier "steering-servo driver" gap — steering stays base-internal behind CAN.
+- [ ] **swerve-base CAN client** (`autonomy/can_client/`, NOT xmDriver): speaks the `protocol/` contract via socketcan, exposing the base as a capability-typed HAL device (twist-commandable, odometry-reporting, health) to the autonomy composition. It lives app-side, not in xmDriver, because the protocol is app-owned (charters/gates: an app-specific client, not a reusable family device) — and it links the same `protocol/` library the base's CAN server does.
 - Measured exit: upper computer commands laps of the *bench-mounted* base over CAN; command→wheel latency and heartbeat-failsafe behavior measured and recorded.
 
 ## Phase 1 — hardware-in-the-loop teleop (retire the biggest unknown first)
