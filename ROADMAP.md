@@ -41,7 +41,7 @@ The repo composes the family (ADR 0005) and is deliberately NOT an umbrella comp
 ## Phase 2 — state estimation on the robot
 
 - [ ] Swerve wheel-odometry: decide the split — base computes odom (reports over CAN, part of the protocol) vs raw module states up + upper-side model. Then the model/covariance work lands where decided (owner: protocol decision first).
-- [ ] IMU on robot: imu_hipnuc driver exists; hardware IMU bench exists (`bench/imu_attitude`) — run the attitude bench on the actual unit (owner: umbrella bench).
+- [ ] IMU on robot: imu_hipnuc driver exists; hardware IMU bench exists (`xmAppBotBench` → `imu_attitude`) — run the attitude bench on the actual unit (owner: xmAppBotBench).
 - [ ] MEKF fusion (IMU + odom) on-target; **validation ladder L0–L5 executed against recorded robot data** (the ladder was proposed for exactly this; owner: xmNavigation).
 - [ ] Localization honesty check: odom+IMU dead-reckoning drifts — decide whether waypoint laps need an absolute reference (UWB/LiDAR/camera) or whether drift-bounded laps satisfy the milestone. **Scoping decision, owner: you.**
 - Measured exit: pose estimate vs ground-truth tape-measure course; NEES consistency from the ladder.
