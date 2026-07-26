@@ -6,14 +6,14 @@
 
 **Everything that moves a mobile robot** — board, firmware, drivers, messaging, and the algorithms that steer them.
 
+<img src="branding/icons/xmboard.svg" width="48" alt="xmBoard">&nbsp;
+<img src="branding/icons/xmfirmware.svg" width="48" alt="xmFirmware">&nbsp;
 <img src="branding/icons/xmbase.svg" width="48" alt="xmBase">&nbsp;
 <img src="branding/icons/xmtelemetry.svg" width="48" alt="xmTelemetry">&nbsp;
 <img src="branding/icons/xmdriver.svg" width="48" alt="xmDriver">&nbsp;
 <img src="branding/icons/xmnavigation.svg" width="48" alt="xmNavigation">&nbsp;
 <img src="branding/icons/xmmessaging.svg" width="48" alt="xmMessaging">&nbsp;
-<img src="branding/icons/xmviewer.svg" width="48" alt="xmViewer">&nbsp;
-<img src="branding/icons/xmfirmware.svg" width="48" alt="xmFirmware">&nbsp;
-<img src="branding/icons/xmboard.svg" width="48" alt="xmBoard">
+<img src="branding/icons/xmviewer.svg" width="48" alt="xmViewer">
 
 </div>
 
