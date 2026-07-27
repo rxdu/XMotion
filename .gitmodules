@@ -22,3 +22,7 @@
 	path = components/messaging
 	url = https://github.com/rxdu/xmMessaging.git
 	branch = main
+[submodule "components/simulator"]
+	path = components/simulator
+	url = https://github.com/rxdu/xmSimulator.git
+	branch = main
