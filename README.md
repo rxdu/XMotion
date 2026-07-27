@@ -13,7 +13,8 @@
 <img src="branding/icons/xmdriver.svg" width="48" alt="xmDriver">&nbsp;
 <img src="branding/icons/xmnavigation.svg" width="48" alt="xmNavigation">&nbsp;
 <img src="branding/icons/xmmessaging.svg" width="48" alt="xmMessaging">&nbsp;
-<img src="branding/icons/xmviewer.svg" width="48" alt="xmViewer">
+<img src="branding/icons/xmviewer.svg" width="48" alt="xmViewer">&nbsp;
+<img src="branding/icons/xmsimulator.svg" width="48" alt="xmSimulator">
 
 </div>
 
@@ -33,10 +34,11 @@ This repository is the **umbrella**: a thin CMake superbuild that assembles the 
 | **∇** | xmNavigation | motion algorithms — planning · control · estimation · mapping&nbsp;·&nbsp;*centerpiece* | [rxdu/xmNavigation](https://github.com/rxdu/xmNavigation) |
 | **π** | xmMessaging | application communication — typed pub/sub · request/response · zero-copy transport | [rxdu/xmMessaging](https://github.com/rxdu/xmMessaging) |
 | **γ** | xmViewer | visualization | [rxdu/quickviz](https://github.com/rxdu/quickviz) |
+| **Ψ** | xmSimulator | physics simulation — MuJoCo world · sensors · dynamics | [rxdu/xmSimulator](https://github.com/rxdu/xmSimulator) |
 
 <sup>1</sup> *xmTelemetry — the production observability SDK and tooling — is privately maintained; available for production integrations.*
 
-Component names follow [ADR 0003](docs/adr/0003-naming-and-branding.md); the Greek letters (κ ζ Σ τ μ ∇ γ π) are retained as logos only — every repo, submodule path, and icon file now carries its functional name. Everything builds on **xmBase**; dependencies point downward only. Two pairs span the boundary: **xmBase/xmDriver** on the host, **xmFirmware/xmBoard** on the embedded target — with **xmNavigation** the motion-algorithms core.
+Component names follow [ADR 0003](docs/adr/0003-naming-and-branding.md); the Greek letters (κ ζ Σ τ μ ∇ γ π Ψ) are retained as logos only — every repo, submodule path, and icon file now carries its functional name. Everything builds on **xmBase**; dependencies point downward only. Two pairs span the boundary: **xmBase/xmDriver** on the host, **xmFirmware/xmBoard** on the embedded target — with **xmNavigation** the motion-algorithms core.
 
 ## Applications
 

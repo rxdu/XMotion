@@ -20,6 +20,7 @@ A cohesive icon set for the XMotion family. Each icon shares one visual language
     <td align="center"><img src="icons/xmfirmware.svg" width="84" alt="xmFirmware"></td>
     <td align="center"><img src="icons/xmboard.svg" width="84" alt="xmBoard"></td>
     <td align="center"><img src="icons/xmmessaging.svg" width="84" alt="xmMessaging"></td>
+    <td align="center"><img src="icons/xmsimulator.svg" width="84" alt="xmSimulator"></td>
   </tr>
   <tr>
     <td align="center"><b>xmBase</b><br>Σ</td>
@@ -30,6 +31,7 @@ A cohesive icon set for the XMotion family. Each icon shares one visual language
     <td align="center"><b>xmFirmware</b><br>ζ</td>
     <td align="center"><b>xmBoard</b><br>κ</td>
     <td align="center"><b>xmMessaging</b><br>π</td>
+    <td align="center"><b>xmSimulator</b><br>Ψ</td>
   </tr>
 </table>
 
@@ -43,6 +45,7 @@ A cohesive icon set for the XMotion family. Each icon shares one visual language
 | **xmFirmware** | `#46B358` green | ζ | a UART decode — logic-analyzer waveform + the decoded byte `0x5A` — firmware (Zephyr) |
 | **xmBoard** | `#E5604D` coral | κ | a PCB fan-out — a quad IC footprint, a structured 45° trace fan onto a via column, and short top/bottom escapes — electronics (KiCAD) |
 | **xmMessaging** | `#2E90FA` signal blue | π | a brokerless peer-to-peer mesh — nodes exchanging messages directly (the application communication layer) |
+| **xmSimulator** | `#B0C918` chartreuse | Ψ | an isometric quadruped robot standing on the ground — legged locomotion / physics simulation (MuJoCo) |
 
 ## The family mark — xmMotion
 
