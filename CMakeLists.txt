@@ -40,6 +40,7 @@ option(XMOTION_WITH_DRIVER    "Build xmDriver (host hardware drivers)"   ON)
 option(XMOTION_WITH_NAVIGATION "Build xmNavigation (motion algorithms)"    ON)
 option(XMOTION_WITH_VIEWER "Build xmViewer (visualization)"        OFF)
 option(XMOTION_WITH_MESSAGING "Build xmMessaging (communication layer)" OFF)
+option(XMOTION_WITH_SIMULATOR "Build xmSimulator (physics simulation)"  OFF)
 option(BUILD_TESTING      "Build component tests"                OFF)
 
 # -- Helper: add a component submodule if it is present ---------------------
@@ -78,7 +79,13 @@ if(XMOTION_WITH_MESSAGING)
   xmotion_add_component(xmMessaging components/messaging)
 endif()
 
+# xmSimulator: MuJoCo-backed physics simulation (world · sensors · dynamics).
+# Default OFF — it pulls the MuJoCo dependency; opt-in for apps that simulate.
+if(XMOTION_WITH_SIMULATOR)
+  xmotion_add_component(xmSimulator components/simulator)
+endif()
+
 message(STATUS "xMotion ${PROJECT_VERSION}: configured "
                "(TELEMETRY=${XMOTION_WITH_TELEMETRY} DRIVER=${XMOTION_WITH_DRIVER} "
                "NAVIGATION=${XMOTION_WITH_NAVIGATION} VIEWER=${XMOTION_WITH_VIEWER} "
-               "MESSAGING=${XMOTION_WITH_MESSAGING})")
+               "MESSAGING=${XMOTION_WITH_MESSAGING} SIMULATOR=${XMOTION_WITH_SIMULATOR})")
