@@ -56,3 +56,48 @@ jobs:
 
       - name: Build
         run: cmake --build build -j
+
+  # macOS assembly (arm64). xmDriver is excluded: it binds SocketCAN
+  # (<linux/can.h>) and libevdev over /dev/input/event*, which have no macOS
+  # equivalents, so it is not portable rather than merely unported. Everything
+  # else assembles. xmTelemetry is omitted for the same reason as the Linux
+  # lane -- it is private and not checked out here.
+  assemble-macos:
+    name: Assemble (macOS arm64, no driver)
+    runs-on: macos-14
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Init component submodules (built set)
+        run: |
+          git submodule sync --recursive
+          git submodule update --init --recursive \
+            components/base components/navigation components/viewer \
+            components/messaging components/simulator
+
+      - name: Install dependencies (union of component deps)
+        # eigen@3 and opencv@4 are keg-only: Homebrew defaults to Eigen 5 and
+        # OpenCV 5, and the components target the 3.x/4.x APIs.
+        run: >
+          brew install eigen@3 opencv@4 pcl boost abseil re2 glm glfw cairo
+          fontconfig ncurses yaml-cpp tbb gsl googletest
+
+      - name: Fetch MuJoCo (xmSimulator)
+        run: components/simulator/scripts/setup/fetch_mujoco.sh
+
+      - name: Configure assembly (no driver)
+        # XMSIM_MUJOCO_DIR is explicit because its default resolves against
+        # CMAKE_SOURCE_DIR, which under add_subdirectory is this umbrella
+        # rather than the simulator's own root.
+        run: >
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+          -DXMOTION_WITH_DRIVER=OFF -DXMOTION_WITH_TELEMETRY=OFF
+          -DXMOTION_WITH_NAVIGATION=ON -DXMOTION_WITH_VIEWER=ON
+          -DXMOTION_WITH_MESSAGING=ON -DXMOTION_WITH_SIMULATOR=ON
+          -DXMSIM_MUJOCO_DIR="$GITHUB_WORKSPACE/components/simulator/third_party/mujoco"
+          -DCMAKE_PREFIX_PATH="$(brew --prefix eigen@3);$(brew --prefix opencv@4)"
+
+      - name: Build
+        run: cmake --build build -j"$(sysctl -n hw.ncpu)"
+
