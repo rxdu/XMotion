@@ -56,7 +56,7 @@ Each submodule is pinned to an exact commit, so `clone → configure → build` 
 
 ## Documentation
 
-[Decision records](docs/adr/) · [Telemetry design](docs/design/telemetry-library-design.md) · [Brand & icons](branding/README.md) · [Tasks](TODO.md)
+[Decision records](docs/adr/) · [Telemetry design](docs/design/telemetry-library-design.md) · [macOS support](docs/design/macos-support.md) · [Brand & icons](branding/README.md) · [Tasks](TODO.md)
 
 ## License
 
