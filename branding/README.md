@@ -21,6 +21,7 @@ A cohesive icon set for the XMotion family. Each icon shares one visual language
     <td align="center"><img src="icons/xmboard.svg" width="84" alt="xmBoard"></td>
     <td align="center"><img src="icons/xmmessaging.svg" width="84" alt="xmMessaging"></td>
     <td align="center"><img src="icons/xmsimulator.svg" width="84" alt="xmSimulator"></td>
+    <td align="center"><img src="icons/xmgymnasium.svg" width="84" alt="xmGymnasium"></td>
   </tr>
   <tr>
     <td align="center"><b>xmBase</b><br>Σ</td>
@@ -32,6 +33,7 @@ A cohesive icon set for the XMotion family. Each icon shares one visual language
     <td align="center"><b>xmBoard</b><br>κ</td>
     <td align="center"><b>xmMessaging</b><br>π</td>
     <td align="center"><b>xmSimulator</b><br>Ψ</td>
+    <td align="center"><b>xmGymnasium</b><br>θ</td>
   </tr>
 </table>
 
@@ -46,6 +48,7 @@ A cohesive icon set for the XMotion family. Each icon shares one visual language
 | **xmBoard** | `#E5604D` coral | κ | a PCB fan-out — a quad IC footprint, a structured 45° trace fan onto a via column, and short top/bottom escapes — electronics (KiCAD) |
 | **xmMessaging** | `#2E90FA` signal blue | π | a brokerless peer-to-peer mesh — nodes exchanging messages directly (the application communication layer) |
 | **xmSimulator** | `#B0C918` chartreuse | Ψ | an isometric quadruped robot standing on the ground — legged locomotion / physics simulation (MuJoCo) |
+| **xmGymnasium** | `#F2C14E` gold | θ | a dumbbell — the gymnasium where policies train; θ is the parameters they learn (training plane) |
 
 ## The family mark — xmMotion
 
