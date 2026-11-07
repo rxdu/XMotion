@@ -32,6 +32,7 @@ The task tracker for the family. Cross-repo sequencing lives here; each componen
 - [ ] evaluate: 2023 iceoryx prototype findings (nav's common/ipc + ros2_idl remnants already removed in W3; ADR 0006 candidate evaluation in PR #19)
 - [ ] xmNavigation: grow common/ into the inter-area stack vocabulary (state → map → decision → plan → control contracts), scenario-driven; controller_interface gets its first real consumers
 - [ ] xmNavigation: traffic_map / road-network revival — unblocks the prediction module and the excluded ghost apps/tests
+- [ ] xmGymnasium ([ADR 0008](docs/adr/0008-training-plane.md), Proposed): answer the six remaining open questions (visibility, environment, runtime home, pinning, glyph, agentic track); create `rxdu/xmGymnasium` (import/CLI `xmgym`); move the producer code (legged Phase L P1–P3) out of the `unitree_rl_mjlab` fork via mjlab's `mjlab.tasks` entry point; v1 done when one command reproduces P4 with a run record and the artifact passes the legged app's L4 and L6 on xmSimulator
 
 ## Deferred (revisit when the trigger condition arrives)
 
