@@ -64,7 +64,7 @@ jobs:
   # lane -- it is private and not checked out here.
   assemble-macos:
     name: Assemble (macOS arm64, no driver)
-    runs-on: macos-14
+    runs-on: macos-15
     steps:
       - name: Checkout
         uses: actions/checkout@v5

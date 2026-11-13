@@ -32,7 +32,6 @@ The task tracker for the family. Cross-repo sequencing lives here; each componen
 - [ ] evaluate: 2023 iceoryx prototype findings (nav's common/ipc + ros2_idl remnants already removed in W3; ADR 0006 candidate evaluation in PR #19)
 - [ ] xmNavigation: grow common/ into the inter-area stack vocabulary (state → map → decision → plan → control contracts), scenario-driven; controller_interface gets its first real consumers
 - [ ] xmNavigation: traffic_map / road-network revival — unblocks the prediction module and the excluded ghost apps/tests
-- [ ] Umbrella CI: GitHub rejects the macOS assembly job's runner label `macos-14` (`.github/workflows/ci.yml:67`). Seen twice on PR #44 (2026-11-13 UTC) with the annotation "The configuration 'macos-14-arm64-us-default' is not supported"; the job last passed on main 2026-09-09.
 
 ## Deferred (revisit when the trigger condition arrives)
 
