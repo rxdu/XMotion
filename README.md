@@ -26,8 +26,8 @@ This repository is the **umbrella**: a thin CMake superbuild that assembles the 
 
 |   | Component | Role | Repo |
 |---|-----------|------|------|
-| **κ** | xmBoard | PCB / electronics (KiCAD) | [rxdu/xmBoard](https://github.com/rxdu/xmBoard) |
-| **ζ** | xmFirmware | MCU firmware (Zephyr) | [rxdu/xmFirmware](https://github.com/rxdu/xmFirmware) |
+| **κ** | xmBoard | PCB / electronics (KiCAD) | private |
+| **ζ** | xmFirmware | MCU firmware (Zephyr) | private |
 | **Σ** | xmBase | foundation — logging · ipc · math · common types | [rxdu/xmBase](https://github.com/rxdu/xmBase) |
 | **τ** | xmTelemetry | observability — logs · metrics · traces · black box | private<sup>1</sup> |
 | **μ** | xmDriver | host hardware drivers — motor · CAN · serial · modbus · sbus · imu | [rxdu/xmDriver](https://github.com/rxdu/xmDriver) |
