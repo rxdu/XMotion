@@ -23,6 +23,8 @@ cmake -S . -B build -DCMAKE_BUILD_TYPE=Release \
 cmake --build build -j"$(sysctl -n hw.ncpu)"
 ```
 
+`-DXMOTION_WITH_TELEMETRY=ON` needs a local xmTelemetry checkout ([components/README.md](../../components/README.md)); omit it otherwise.
+
 `XMSIM_MUJOCO_DIR` must be passed explicitly under the umbrella: its default resolves against `CMAKE_SOURCE_DIR`, which under `add_subdirectory` is the umbrella root rather than the simulator's own. That is pre-existing and not macOS-specific.
 
 ## Test results

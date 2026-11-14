@@ -7,9 +7,10 @@ Component names follow [ADR 0003](../docs/adr/0003-naming-and-branding.md): subm
 | Path | Submodule repo | Component |
 |------|----------------|-----------|
 | `base/`       | `rxdu/xmBase`       | xmBase (Σ) — foundation |
-| `telemetry/`  | `rxdu/xmTelemetry`  | xmTelemetry — observability SDK + tools |
 | `driver/`     | `rxdu/xmDriver`     | xmDriver (μ) — host hardware drivers |
 | `navigation/` | `rxdu/xmNavigation` | xmNavigation (∇) — motion algorithms |
 | `viewer/`     | `rxdu/quickviz`     | xmViewer (γ) — visualization |
+
+`telemetry/` is not vendored. To build xmTelemetry in the assembly, place a checkout (or a symlink to one) there and configure with `-DXMOTION_WITH_TELEMETRY=ON`; git ignores the path.
 
 Historical note: the paths carried the Greek codenames (`sigma/`, `mu/`, `nabla/`, `gamma/`) during the repo transition (see `../docs/adr/0002-repo-transition-plan.md`); they were renamed to the function words once every repo rename landed.
