@@ -29,14 +29,12 @@ This repository is the **umbrella**: a thin CMake superbuild that assembles the 
 | **κ** | xmBoard | PCB / electronics (KiCAD) | private |
 | **ζ** | xmFirmware | MCU firmware (Zephyr) | private |
 | **Σ** | xmBase | foundation — logging · ipc · math · common types | [rxdu/xmBase](https://github.com/rxdu/xmBase) |
-| **τ** | xmTelemetry | observability — logs · metrics · traces · black box | private<sup>1</sup> |
+| **τ** | xmTelemetry | observability — logs · metrics · traces · black box | private |
 | **μ** | xmDriver | host hardware drivers — motor · CAN · serial · modbus · sbus · imu | [rxdu/xmDriver](https://github.com/rxdu/xmDriver) |
 | **∇** | xmNavigation | motion algorithms — planning · control · estimation · mapping&nbsp;·&nbsp;*centerpiece* | [rxdu/xmNavigation](https://github.com/rxdu/xmNavigation) |
 | **π** | xmMessaging | application communication — typed pub/sub · request/response · zero-copy transport | [rxdu/xmMessaging](https://github.com/rxdu/xmMessaging) |
 | **γ** | xmViewer | visualization | [rxdu/quickviz](https://github.com/rxdu/quickviz) |
 | **Ψ** | xmSimulator | physics simulation — MuJoCo world · sensors · dynamics | [rxdu/xmSimulator](https://github.com/rxdu/xmSimulator) |
-
-<sup>1</sup> *xmTelemetry — the production observability SDK and tooling — is privately maintained; available for production integrations.*
 
 Component names follow [ADR 0003](docs/adr/0003-naming-and-branding.md); the Greek letters (κ ζ Σ τ μ ∇ γ π Ψ) are retained as logos only — every repo, submodule path, and icon file now carries its functional name. Everything builds on **xmBase**; dependencies point downward only. Two pairs span the boundary: **xmBase/xmDriver** on the host, **xmFirmware/xmBoard** on the embedded target — with **xmNavigation** the motion-algorithms core.
 
