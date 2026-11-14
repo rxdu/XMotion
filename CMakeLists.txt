@@ -35,7 +35,7 @@ endif()
 # -- Options ----------------------------------------------------------------
 # xmBase (foundation) is always built. The rest are opt-in so a consumer only
 # pays for the dependency footprint it actually needs.
-option(XMOTION_WITH_TELEMETRY "Build xmTelemetry (observability SDK)"    ON)
+option(XMOTION_WITH_TELEMETRY "Build xmTelemetry (observability SDK)"    OFF)
 option(XMOTION_WITH_DRIVER    "Build xmDriver (host hardware drivers)"   ON)
 option(XMOTION_WITH_NAVIGATION "Build xmNavigation (motion algorithms)"    ON)
 option(XMOTION_WITH_VIEWER "Build xmViewer (visualization)"        OFF)
@@ -57,7 +57,14 @@ endfunction()
 # -- Assemble (dependency order: foundation first) --------------------------
 xmotion_add_component(xmBase components/base)
 
+# xmTelemetry is not vendored here. To include it, place a checkout (or a
+# symlink to one) at components/telemetry and configure with
+# -DXMOTION_WITH_TELEMETRY=ON.
 if(XMOTION_WITH_TELEMETRY)
+  if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/components/telemetry/CMakeLists.txt")
+    message(FATAL_ERROR "XMOTION_WITH_TELEMETRY=ON but components/telemetry "
+                        "has no checkout (see components/README.md)")
+  endif()
   xmotion_add_component(xmTelemetry components/telemetry)
 endif()
 

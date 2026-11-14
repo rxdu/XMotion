@@ -13,6 +13,9 @@ CMakeCache.txt
 CMakeFiles/
 *.cmake.user
 
+# Local checkout of a component that is not vendored here (components/README.md)
+/components/telemetry
+
 # Editor / OS
 .idea/
 .vscode/
