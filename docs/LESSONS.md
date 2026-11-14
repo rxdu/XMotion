@@ -21,3 +21,8 @@ Cross-cutting lessons for the XMotion polyrepo + umbrella. One entry per recurri
 - **Pattern:** Component CI built with default compiler flags — no `-Wall -Wextra`, nothing treating warnings as errors — so a `-Wformat-truncation` warning shipped in new foundation code and was first noticed by a human reading local build output. Enabling strict warnings retroactively surfaced real latent defects the suite had missed: a non-exhaustive `switch` over a grown enum (`-Wswitch`), and a provably-dead null check on string-literal arguments in a template (`-Waddress`).
 - **Correction:** Every component gets `XMOTION_WERROR` (`-Wall -Wextra -Werror`, applied after `add_subdirectory(third_party)` so vendored code is untouched; vendored dependency headers marked `INTERFACE_SYSTEM_INCLUDE_DIRECTORIES` so a pinned dep never gates a consumer), and every CI lane passes `-DXMOTION_WERROR=ON`. New repos wire this on day one; a warning class worth silencing is silenced at the code site with intent made explicit (`%.Ns` precision, `void*` cast, unnamed parameter), never globally.
 - **Context:** CMake/GCC family repos; CI workflows.
+
+### A text audit truncated lines before filtering them
+- **Pattern:** A repo-wide history search cut each matched diff line to a fixed width, then filtered the cut text again. A match past the cut point disappeared, and the audit reported a clean result it had not earned.
+- **Correction:** Extract a context window around each match (for example perl `/(.{0,90}(?:PAT).{0,60})/g`); never re-filter display-truncated text. Before reporting "no matches", confirm the pipeline finds one known positive.
+- **Context:** Shell audits built on `git log -G` / `git grep` pipelines across the family repos.

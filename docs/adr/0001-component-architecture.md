@@ -100,7 +100,9 @@ Accepted tradeoff: a change to a shared `xmSigma` API requires bumping its pin i
 4. **One FSM** — converge on `ctfsm` (already proven in `legged_controller`); retire `fsm_template.hpp`.
 5. **Naming is a standard** — `xm-` symbol names map 1:1 to repos, CMake targets (`xmotion::sigma/mu/nabla/gamma`), and namespaces (`xmotion::`); each always travels with a one-line function descriptor.
 6. **Fix known issues on migration** — rename `trackedbot_controller`'s `project(xmotion)`; replace full-source `add_subdirectory` vendoring with `find_package`.
-7. **Licensing** — the family is licensed **Apache-2.0** (permissive + explicit patent grant), replacing the prior BSD-3-Clause. Each repo carries `LICENSE` (Apache-2.0) + `NOTICE`; bundled third-party submodules keep their own licenses. To preserve the option of future commercialization / dual-licensing, **outside contributions require a CLA or DCO** so copyright ownership stays consolidated.
+7. **Licensing** — the family's public components are licensed **Apache-2.0** (permissive + explicit patent grant), replacing the prior BSD-3-Clause. Each public repo carries `LICENSE` (Apache-2.0) + `NOTICE`; bundled third-party submodules keep their own licenses. Private components carry their own `LICENSE`. **Outside contributions require a CLA or DCO** so copyright ownership stays consolidated.
+
+   > **Revision (2026-11-14):** narrowed from the whole family to its public components.
 
 ### 5. Target layout
 
