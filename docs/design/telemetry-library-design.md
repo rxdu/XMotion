@@ -38,14 +38,12 @@ Dependency rule: components (xmDriver, xmNavigation, …) instrument against the
 
 ## 4. The xmTelemetry SDK
 
-The SDK is a separate, privately maintained component for teams integrating XMotion into production systems. At the capability level, binding it turns the same instrumented call sites into:
+The SDK is a separate, private component. At the capability level, binding it turns the same instrumented call sites into:
 
 - **A crash-surviving flight recorder** — the last seconds before a `SIGKILL` or panic are recoverable post-mortem, with metrics, spans, and the log tail intact, on an unmodified machine.
 - **A recording plane** — MCAP recordings that open directly in Foxglove/PlotJuggler, with rotation, retention, storage-fault tolerance, and pre/post-trigger snapshot windows (EDR semantics).
 - **Insight tooling** — live tailing of a running (or dead) process, one-command post-mortem triage reports that surface sporadic stalls and rare bugs with trace drill-downs, Perfetto/OTLP exports for interactive analysis, and machine-readable digests that gate CI on performance regressions.
 - **RT discipline throughout** — wait-free capture, bounded memory, counted drops, verified under ASan/TSan/UBSan and enforced per-operation latency budgets.
-
-Interested in production integration? Reach out via the repository owner.
 
 ## 5. Interoperability
 
