@@ -1,6 +1,6 @@
 # xMotion on native macOS (arm64)
 
-Every component except xmDriver builds and tests natively on macOS on Apple Silicon, with no compile flags and no header shims. Each portable component carries a `macos-14` CI lane, and the umbrella assembles the non-driver set there.
+Every component except xmDriver builds and tests natively on macOS on Apple Silicon, with no compile flags and no header shims. Each portable component carries a `macos-15` CI lane, and the umbrella assembles the non-driver set there.
 
 Verified on macOS 15 / arm64 with AppleClang, libc++ and Homebrew.
 
